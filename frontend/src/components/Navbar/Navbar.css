@@ -1,0 +1,184 @@
+html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f6f8fa;
+  }
+  
+  
+  body.dark-mode {
+    background: #18191a;
+    color: #e4e6eb;
+  }
+  
+  
+  /* Top Navbar */
+  .top-navbar {
+    position: fixed;
+    width: 100%;
+    left: 0;
+    top: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    color: #8013bd;
+    padding: 0 2rem;
+    height: 64px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    z-index: 100;
+  }
+  
+  
+  .logo-title {
+    display: flex;
+    align-items: center;
+  }
+  
+  
+  .logo-title img {
+    height: 40px;
+    margin-right: 1rem;
+  }
+  
+  
+  .title-text {
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+  
+  
+  /* Sidebar */
+  .sidebar {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    width: 240px;
+    height: calc(100vh - 64px);
+    background: #fff;
+    border-right: 1px solid #e0e0e0;
+    padding-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: background 0.3s, color 0.3s;
+    z-index: 10;
+  }
+  
+  
+  body.dark-mode .sidebar {
+    background: #23272f;
+    border-color: #333;
+  }
+  
+  
+  /* Nav Links */
+  .nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  
+  .navbox {
+    display: flex;
+    align-items: center;
+    margin-top: 0.6rem;
+    margin-bottom: 0.6rem;
+  }
+  
+  
+  .navlink {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 0.9rem 1.5rem;
+    color: #000;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    border-radius: 6px;
+    transition: background 0.3s, color 0.3s;
+  }
+  
+  
+  .nav-icon {
+    margin-right: 0.5rem;
+    display: flex;
+    align-items: center;
+  }
+  
+  
+  .navlink:hover {
+    background: #7209b7;
+    color: #fff;
+  }
+  
+  
+  .navlink.active {
+    background: #7209b7;
+    color: white;
+    font-weight: 600;
+  }
+  
+  
+  body.dark-mode .navlink {
+    color: #90caf9;
+  }
+  
+  
+  body.dark-mode .navlink:hover {
+    background: #1a2236;
+    color: #ffd600;
+  }
+  
+  
+  body.dark-mode .navlink.active {
+    background: #1a2236;
+    color: #ffd600;
+    font-weight: 600;
+  }
+  
+  
+  /* Logout Button */
+  .logout-wrapper {
+    margin-bottom: 3rem;
+    padding: 0 1.5rem;
+  }
+  
+  
+  .logout {
+    width: 100%;
+    padding: 0.7rem 0;
+    background: #ff0000;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  
+  .logout:hover {
+    background: #cb0b0a;
+  }
+  
+  
+  body.dark-mode .logout {
+    background: #c62828;
+    color: #fff;
+  }
+  
+  
+  body.dark-mode .logout:hover {
+    background: #8e0000;
+  }

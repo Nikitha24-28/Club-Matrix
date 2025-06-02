@@ -1,0 +1,13 @@
+.main-content {
+  margin-left: 240px; /* Same as sidebar width */
+  margin-top: 64px; /* Same as navbar height */
+  padding: 20px;
+  min-height: calc(100vh - 64px);
+  background-color: #f6f8fa;
+}
+
+/* For dark mode */
+body.dark-mode .main-content {
+  background-color: #18191a;
+  color: #e4e6eb;
+} 
