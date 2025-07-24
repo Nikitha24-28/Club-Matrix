@@ -1,0 +1,286 @@
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Main container */
+.login-container {
+  max-height: 100vh;
+  display: flex;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Left side - Login form section */
+.login-form-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background-color: hsl(0 0% 100%);
+}
+
+.login-form-wrapper {
+  width: 100%;
+  max-width: 28rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Header styles */
+.login-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.login-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  background: linear-gradient(to right, hsl(262.1 83.3% 57.8%), hsl(262.1 83.3% 67.8%));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.login-subtitle {
+  color: hsl(215.4 16.3% 46.9%);
+  font-size: 1rem;
+}
+
+/* Card styles */
+.login-card {
+  background: white;
+  border-radius: 0.5rem;
+  border: 1px solid hsl(214.3 31.8% 91.4%);
+  box-shadow: 0 10px 30px -10px hsl(262.1 83.3% 57.8% / 0.3);
+}
+
+.card-header {
+  padding: 1.5rem 1.5rem 0.25rem 1.5rem;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: hsl(222.2 84% 4.9%);
+}
+
+.card-content {
+  padding: 1.5rem;
+}
+
+/* Error alert */
+.error-alert {
+  background-color: hsl(0 84.2% 60.2% / 0.1);
+  border: 1px solid hsl(0 84.2% 60.2% / 0.2);
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.error-alert p {
+  color: hsl(0 84.2% 60.2%);
+  font-size: 0.875rem;
+}
+
+/* Form styles */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: hsl(222.2 84% 4.9%);
+}
+
+.form-input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid hsl(214.3 31.8% 91.4%);
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  background-color: white;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: hsl(262.1 83.3% 57.8%);
+  box-shadow: 0 0 0 2px hsl(262.1 83.3% 57.8% / 0.2);
+}
+
+.form-input::placeholder {
+  color: hsl(215.4 16.3% 46.9%);
+}
+
+/* Submit button */
+.submit-button {
+  width: 100%;
+  padding: 0.625rem 1rem;
+  background: linear-gradient(to right, hsl(262.1 83.3% 57.8%), hsl(262.1 83.3% 67.8%));
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.submit-button:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Contact admin section */
+.contact-admin {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.contact-text {
+  font-size: 0.875rem;
+  color: hsl(215.4 16.3% 46.9%);
+}
+
+.contact-link {
+  color: hsl(262.1 83.3% 57.8%);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.contact-link:hover {
+  text-decoration: underline;
+}
+
+/* Right side - Hero section */
+.hero-section {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: none;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom right, hsl(262.1 83.3% 57.8% / 0.1), hsl(262.1 83.3% 67.8% / 0.1));
+  z-index: 1;
+}
+
+.hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.2), transparent);
+  z-index: 2;
+}
+
+.hero-content {
+  position: absolute;
+  bottom: 2rem;
+  left: 2rem;
+  right: 2rem;
+  color: white;
+  z-index: 3;
+}
+
+.hero-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.hero-description {
+  font-size: 1.125rem;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+/* Responsive design */
+@media (min-width: 1024px) {
+  .hero-section {
+    display: flex;
+  }
+}
+
+@media (max-width: 640px) {
+  .login-form-section {
+    padding: 1rem;
+  }
+  
+  .login-title {
+    font-size: 1.875rem;
+  }
+  
+  .hero-content {
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+  }
+  
+  .hero-title {
+    font-size: 1.5rem;
+  }
+  
+  .hero-description {
+    font-size: 1rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .login-form-section {
+    background-color: hsl(222.2 84% 4.9%);
+  }
+  
+  .login-card {
+    background: hsl(222.2 84% 4.9%);
+    border-color: hsl(217.2 32.6% 17.5%);
+  }
+  
+  .card-title,
+  .form-label {
+    color: hsl(210 40% 98%);
+  }
+  
+  .login-subtitle,
+  .contact-text {
+    color: hsl(215 20.2% 65.1%);
+  }
+  
+  .form-input {
+    background-color: hsl(222.2 84% 4.9%);
+    border-color: hsl(217.2 32.6% 17.5%);
+    color: hsl(210 40% 98%);
+  }
+  
+  .form-input::placeholder {
+    color: hsl(215 20.2% 65.1%);
+  }
+}
