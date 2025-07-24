@@ -1,0 +1,41 @@
+.CommunityPage {
+    display: flex;
+    justify-content: flex-end;
+    height: 100vh;
+    background-color: #f5f5f5;
+    padding-top: 64px;
+    padding-left: 220px;
+    box-sizing: border-box;
+  }
+  
+  /* Right-side menu bar */
+  .myclubs {
+    width: 250px;
+    background-color: #ffffff;
+    border-left: 3px solid #007bff;
+    padding: 20px;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    border-radius: 10px 0 0 10px;
+    height: calc(100vh - 64px); /* Respect top padding */
+    position: fixed;
+    top: 64px;
+    right: 0;
+  }
+  
+  /* Each club as a card */
+  .myclubs h1 {
+    font-size: 1.2rem;
+    margin: 15px 0;
+    padding: 15px;
+    background-color: #e6f0ff;
+    color: #003366;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 123, 255, 0.1);
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .myclubs h1:hover {
+    background-color: #cce0ff;
+  }  
