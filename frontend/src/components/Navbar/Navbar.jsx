@@ -26,7 +26,6 @@ const Navbar = () => {
     <>
       <div className="top-navbar">
         <div className="logo-title">
-          <span className="title-text">Club Matrix</span>
         </div>
       </div>
 
@@ -51,7 +50,7 @@ const Navbar = () => {
 
         <div className="logout-wrapper">
           <button className="logout" onClick={handleLogout}>
-            Logout
+           Logout
           </button>
         </div>
       </div>
