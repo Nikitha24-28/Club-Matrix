@@ -1,0 +1,32 @@
+/* Page Wrapper Styles */
+.page-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.page-content {
+  flex: 1;
+  margin-left: 280px; /* Width of the sidebar */
+  padding: 2rem;
+  overflow-y: auto;
+  background-color: #f8f9fa;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .page-wrapper {
+    flex-direction: column;
+  }
+  
+  .page-content {
+    margin-left: 0;
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-content {
+    padding: 0.75rem;
+  }
+}
