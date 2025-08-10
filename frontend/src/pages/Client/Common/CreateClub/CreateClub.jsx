@@ -1,8 +1,11 @@
 import React from 'react'
+import ClientLayout from '../../Nav/ClientLayout';
+import './CreateClub.css';
 
 const CreateClub = () => {
   return (
-    <div className='Create-Club'>
+    <ClientLayout userRole="general">
+      <div className='create-club-content'>
         <h1> Create a Club </h1>
         <form>
             <label>Club Name:</label>
@@ -38,8 +41,11 @@ const CreateClub = () => {
             <br/>
             <label>Upload Club Logo:</label>
             <input type="file" name="clubLogo" accept="image/*" />
+            <br/>
+            <button type="submit" className="submit-btn">Create Club</button>
         </form>
-    </div>
+      </div>
+    </ClientLayout>
   )
 }
 

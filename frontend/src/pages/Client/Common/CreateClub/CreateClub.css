@@ -1,0 +1,168 @@
+/* Create Club Content */
+.create-club-content {
+  padding: 2rem;
+  background-color: #f8f9fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.create-club-content h1 {
+  color: #2c3e50;
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+/* Form Styles */
+.create-club-content form {
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.create-club-content label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.create-club-content input,
+.create-club-content textarea,
+.create-club-content select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  margin-bottom: 1.5rem;
+  box-sizing: border-box;
+}
+
+.create-club-content input:focus,
+.create-club-content textarea:focus,
+.create-club-content select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.create-club-content textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.create-club-content select {
+  background-color: #ffffff;
+  cursor: pointer;
+}
+
+/* File Input Styling */
+.create-club-content input[type="file"] {
+  padding: 0.5rem;
+  border: 2px dashed #e9ecef;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.create-club-content input[type="file"]:hover {
+  border-color: #667eea;
+  background-color: #f0f2ff;
+}
+
+/* Submit Button */
+.submit-btn {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 1rem;
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .create-club-content {
+    margin-left: 0 !important;
+    padding: 1rem;
+  }
+  
+  .create-club-content form {
+    padding: 1.5rem;
+  }
+  
+  .create-club-content h1 {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .create-club-content {
+    padding: 0.75rem;
+  }
+  
+  .create-club-content form {
+    padding: 1rem;
+  }
+  
+  .create-club-content h1 {
+    font-size: 1.5rem;
+  }
+  
+  .create-club-content input,
+  .create-club-content textarea,
+  .create-club-content select {
+    padding: 0.625rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Animation for form elements */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.create-club-content form {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+.create-club-content form > * {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+.create-club-content form > *:nth-child(1) { animation-delay: 0.1s; }
+.create-club-content form > *:nth-child(2) { animation-delay: 0.2s; }
+.create-club-content form > *:nth-child(3) { animation-delay: 0.3s; }
+.create-club-content form > *:nth-child(4) { animation-delay: 0.4s; }
+.create-club-content form > *:nth-child(5) { animation-delay: 0.5s; }
+.create-club-content form > *:nth-child(6) { animation-delay: 0.6s; }
+.create-club-content form > *:nth-child(7) { animation-delay: 0.7s; }
+.create-club-content form > *:nth-child(8) { animation-delay: 0.8s; }
+.create-club-content form > *:nth-child(9) { animation-delay: 0.9s; }
