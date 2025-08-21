@@ -26,6 +26,14 @@ const Navbar = () => {
     <>
       <div className="top-navbar">
         <div className="logo-title">
+          <div className="logo">
+            <span className="logo-text">CM</span>
+          </div>
+          <h1 className="app-title">Club Matrix</h1>
+        </div>
+        <div className="user-info">
+          <span className="user-name">John Doe</span>
+          <span className="user-role">{role}</span>
         </div>
       </div>
 

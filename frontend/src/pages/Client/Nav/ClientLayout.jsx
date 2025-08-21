@@ -1,5 +1,6 @@
 import React from 'react';
 import Nav from './Nav';
+import './ClientLayout.css';
 
 const ClientLayout = ({ children, userRole = 'general', userStatus = 'member', currentClub = null }) => {
   return (
@@ -9,7 +10,7 @@ const ClientLayout = ({ children, userRole = 'general', userStatus = 'member', c
         userStatus={userStatus}
         currentClub={currentClub}
       />
-      <div className="client-content" style={{ marginLeft: '280px' }}>
+      <div className="client-content">
         {children}
       </div>
     </div>
@@ -17,3 +18,4 @@ const ClientLayout = ({ children, userRole = 'general', userStatus = 'member', c
 };
 
 export default ClientLayout;
+

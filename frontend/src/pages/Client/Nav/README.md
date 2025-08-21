@@ -210,3 +210,4 @@ The component is designed to be easily extensible:
 - The component is fully responsive and mobile-friendly
 - Active state is automatically managed based on current route
 - No dummy links or placeholder logic included - only functional navigation items
+

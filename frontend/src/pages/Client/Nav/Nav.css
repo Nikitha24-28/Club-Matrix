@@ -1,6 +1,8 @@
 /* Navigation Sidebar Styles */
-.nav-sidebar {
-  width: 280px;
+.sidebar-nav {
+  width: 20%;
+  min-width: 250px;
+  max-width: 300px;
   background-color: #ffffff;
   border-right: 1px solid #e9ecef;
   box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
@@ -261,3 +263,4 @@
 .nav-item:nth-child(8) { animation-delay: 0.8s; }
 .nav-item:nth-child(9) { animation-delay: 0.9s; }
 .nav-item:nth-child(10) { animation-delay: 1.0s; }
+
