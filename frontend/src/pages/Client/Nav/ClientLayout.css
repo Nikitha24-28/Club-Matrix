@@ -1,0 +1,25 @@
+.client-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.client-content {
+  flex: 1;
+  margin-left: 20%;
+  min-width: 0; /* Prevents flex item from overflowing */
+  background-color: #f8fafc;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .client-content {
+    margin-left: 0;
+    width: 100%;
+  }
+  
+  .sidebar-nav {
+    width: 100%;
+    position: relative;
+    height: auto;
+  }
+}

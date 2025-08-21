@@ -22,14 +22,6 @@ const Nav = ({ userRole = 'general', userStatus = 'member', currentClub = null }
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleNavClick = (link) => {
-    navigate(link);
-  };
-
-  const isActive = (link) => {
-    return location.pathname === link;
-  };
-
   // Base navigation items for general clients
   const generalNavItems = [
     { 
@@ -142,14 +134,14 @@ const Nav = ({ userRole = 'general', userStatus = 'member', currentClub = null }
     ));
 
     // Add member items if user is a member or coordinator
-    if (userStatus === 'member' || userStatus === 'coordinator') {
+    if (currentClub && (userStatus === 'member' || userStatus === 'coordinator')) {
       items = items.concat(memberNavItems.filter(item => 
         item.roles.includes(userStatus)
       ));
     }
 
     // Add coordinator items if user is a coordinator
-    if (userStatus === 'coordinator') {
+    if (currentClub && userStatus === 'coordinator') {
       items = items.concat(coordinatorNavItems.filter(item => 
         item.roles.includes(userStatus)
       ));
@@ -169,7 +161,7 @@ const Nav = ({ userRole = 'general', userStatus = 'member', currentClub = null }
   };
 
   return (
-    <div className="nav-sidebar">
+    <div className="sidebar-nav">
       <div className="sidebar-header">
         <div className="logo-title">
           <div className="logo">
