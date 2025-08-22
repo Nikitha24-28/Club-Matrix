@@ -22,6 +22,12 @@ const Nav = ({ userRole = 'general', userStatus = 'member', currentClub = null }
   const navigate = useNavigate();
   const location = useLocation();
 
+  const handleLogout = () => {
+    localStorage.removeItem("role");
+    navigate("/");  // React Router redirect
+  };
+  
+
   // Base navigation items for general clients
   const generalNavItems = [
     { 
@@ -52,6 +58,12 @@ const Nav = ({ userRole = 'general', userStatus = 'member', currentClub = null }
       icon: <Settings size={20} />, 
       label: "Settings", 
       link: "/SettingsPage",
+      roles: ['general', 'member', 'coordinator']
+    },
+    {
+      icon: <Settings size={20} />,
+      label: "Logout", 
+      link: "{}",
       roles: ['general', 'member', 'coordinator']
     }
   ];
@@ -199,6 +211,12 @@ const Nav = ({ userRole = 'general', userStatus = 'member', currentClub = null }
 
       <div className="sidebar-footer">
         <div className="user-info">
+          <div className="logout-wrapper">
+            <button className="logout" onClick={handleLogout}>
+            Logout
+            </button>
+          </div>
+        
           <div className="user-avatar">
             <span>JD</span>
           </div>

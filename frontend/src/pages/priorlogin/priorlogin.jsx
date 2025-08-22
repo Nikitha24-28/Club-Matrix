@@ -6,7 +6,6 @@ import './priorlogin.css';
 const PriorLogin = () => {
   return (
     <div className="prior-login">
-      {/* Navbar */}
       <nav className="navbar">
         <div className="navbar-brand">
           <h2 className="brand-title">CLUB MATRIX</h2>

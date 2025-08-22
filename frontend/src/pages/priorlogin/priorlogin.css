@@ -168,6 +168,7 @@
 .hero {
   padding: 5rem 1.5rem;
   background: linear-gradient(180deg, #f9fafb, #f3f4f6);
+  margin-bottom: 4rem; /* ✅ add this */
 }
 
 .hero-container {
@@ -314,6 +315,7 @@
 /* ============= FEATURES STYLES ============= */
 .features {
   padding: 5rem 1.5rem;
+  margin-top: 4rem; /* ✅ extra gap from hero */
 }
 
 .features-container {

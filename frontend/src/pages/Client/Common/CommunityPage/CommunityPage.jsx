@@ -166,7 +166,7 @@ const CommunityPage = () => {
     //     </div>
     //   </div>
     // </ClientLayout>
-    <div>Public Club Page , Comming Soon</div>
+    <div>Public Club Page , Comming Soon </div>
   );
 };
 
