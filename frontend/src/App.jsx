@@ -4,11 +4,13 @@ import ClientLayout from './pages/Client/Nav/ClientLayout';
 import CommunityPage from "./pages/Client/Common/CommunityPage/CommunityPage";
 import CreateClub from "./pages/Client/Common/CreateClub/CreateClub";
 import PriorLogin from "./pages/priorlogin/priorlogin";
+import AppLayout from "../src/components/AppLayout/AppLayout";
 
 const App = () => {
   return (
-    <PriorLogin/>
-    // <Router>
+    <AppLayout/>
+    // <PriorLogin/>
+    // // <Router>
     //   <Routes>
     //     <Route path="/" element={<Navigate to="/CommunityPage" />} />
     //     <Route path="/CommunityPage" element={
