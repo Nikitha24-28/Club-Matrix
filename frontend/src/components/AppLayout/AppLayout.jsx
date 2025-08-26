@@ -6,6 +6,7 @@ import CommunityPage from '../../pages/Client/Common/CommunityPage/CommunityPage
 import CreateClub from '../../pages/Client/Common/CreateClub/CreateClub';
 import PriorLogin from "../../pages/priorlogin/priorlogin"; // import landing page
 import Nav from '../../pages/Client/Nav/Nav';
+import ClientLayout from '../../pages/Client/Nav/ClientLayout';
 
 const AppLayout = () => {
   const role = localStorage.getItem("role");
@@ -17,17 +18,18 @@ const AppLayout = () => {
         {/* Landing page (always public) */}
         <Route path="/" element={<PriorLogin />} />
 
-        {/* Login page (only if not logged in) */}
-        {!role && (
-          <>
-            <Route path="/login" element={<Login />} />
-            {/* Redirect all unknown routes to landing */}
-            <Route path="*" element={<Navigate to="/" />} />
-          </>
-        )}
+        {/* Login page: always available; redirect if already logged in */}
+        <Route
+          path="/login"
+          element={
+            role
+              ? (role === "ADMIN" ? <Navigate to="/AdminDashboard" /> : <Navigate to="/CommunityPage" />)
+              : <Login />
+          }
+        />
 
         {/* If logged in */}
-        {role && <Nav /> && (
+        {role && (
           <>
             {role === "ADMIN" && (
               <>
@@ -38,16 +40,39 @@ const AppLayout = () => {
 
             {role === "CLIENT" && (
               <>
-                <Route path="/CommunityPage" element={<CommunityPage />} />
-                <Route path="/CreateClubPage" element={<CreateClub />} />
-                <Route path="/ProfilePage" element={<div>Profile Page - Coming Soon</div>} />
-                <Route path="/JoinRequestsPage" element={<div>Join Requests Page - Coming Soon</div>} />
-                <Route path="/SettingsPage" element={<div>Settings Page - Coming Soon</div>} />
+                <Route path="/CommunityPage" element={
+                  <ClientLayout userRole="general">
+                    <CommunityPage />
+                  </ClientLayout>
+                } />
+                <Route path="/CreateClubPage" element={
+                  <ClientLayout userRole="general">
+                    <CreateClub />
+                  </ClientLayout>
+                } />
+                <Route path="/ProfilePage" element={
+                  <ClientLayout userRole="general">
+                    <div>Profile Page - Coming Soon</div>
+                  </ClientLayout>
+                } />
+                <Route path="/JoinRequestsPage" element={
+                  <ClientLayout userRole="general">
+                    <div>Join Requests Page - Coming Soon</div>
+                  </ClientLayout>
+                } />
+                <Route path="/SettingsPage" element={
+                  <ClientLayout userRole="general">
+                    <div>Settings Page - Coming Soon</div>
+                  </ClientLayout>
+                } />
                 <Route path="*" element={<Navigate to="/CommunityPage" />} />
               </>
             )}
           </>
         )}
+
+        {/* Fallback when not logged in: send unknown routes to landing */}
+        {!role && <Route path="*" element={<Navigate to="/" />} />}
       </Routes>
     </Router>
   );
