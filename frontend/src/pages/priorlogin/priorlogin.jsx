@@ -1,11 +1,25 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Users, Calendar, TrendingUp, Shield, Target, Globe, BarChart3 } from 'lucide-react';
 import clubHeroImage from '../../assets/image.png';
 import './priorlogin.css';
 
 const PriorLogin = () => {
+    const navigate = useNavigate();
+    const handleSignIn = () => {
+        navigate('/login');
+    };
+    useEffect(() => {
+        try {
+            localStorage.removeItem('role');
+            localStorage.removeItem('email');
+        } catch (e) {
+            // no-op
+        }
+    }, []);
   return (
     <div className="prior-login">
+      {/* Navbar */}
       <nav className="navbar">
         <div className="navbar-brand">
           <h2 className="brand-title">CLUB MATRIX</h2>
@@ -18,7 +32,7 @@ const PriorLogin = () => {
         </div>
         
         <div className="navbar-actions">
-          <button className="btn btn-ghost">Sign In</button>
+          <button className="btn btn-ghost" onClick={handleSignIn}>Sign In</button>
           <button className="btn btn-hero">Get Started</button>
         </div>
       </nav>
@@ -224,4 +238,4 @@ const PriorLogin = () => {
   );
 };
 
-export default PriorLogin ;
+export default PriorLogin;

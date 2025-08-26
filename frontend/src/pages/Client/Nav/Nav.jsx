@@ -24,7 +24,8 @@ const Nav = ({ userRole = 'general', userStatus = 'member', currentClub = null }
 
   const handleLogout = () => {
     localStorage.removeItem("role");
-    navigate("/");  // React Router redirect
+    localStorage.removeItem("email");
+    navigate("/");
   };
   
 
@@ -63,7 +64,7 @@ const Nav = ({ userRole = 'general', userStatus = 'member', currentClub = null }
     {
       icon: <Settings size={20} />,
       label: "Logout", 
-      link: "{}",
+      link: "LOGOUT",
       roles: ['general', 'member', 'coordinator']
     }
   ];
@@ -165,6 +166,10 @@ const Nav = ({ userRole = 'general', userStatus = 'member', currentClub = null }
   const navItems = getNavItems();
 
   const handleNavClick = (link) => {
+    if (link === 'LOGOUT') {
+      handleLogout();
+      return;
+    }
     navigate(link);
   };
 
