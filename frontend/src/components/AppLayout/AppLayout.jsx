@@ -1,11 +1,12 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from '../Login/Login';
-import Dashboard from '../../pages/Admin/Dashboard/Dashboard';
 import CommunityPage from '../../pages/Client/Common/CommunityPage/CommunityPage';
+import AdminDashboard from "../../pages/Admin/Dashboard/AdminDashboard";
 import CreateClub from '../../pages/Client/Common/CreateClub/CreateClub';
 import PriorLogin from "../../pages/priorlogin/priorlogin"; // import landing page
 import Nav from '../../pages/Client/Nav/Nav';
+import MyClubs from '../../pages/Client/Coordinator/MyClubs/MyClubs';
 import ClientLayout from '../../pages/Client/Nav/ClientLayout';
 
 const AppLayout = () => {
@@ -33,7 +34,7 @@ const AppLayout = () => {
           <>
             {role === "ADMIN" && (
               <>
-                <Route path="/AdminDashboard" element={<Dashboard />} />
+                <Route path="/AdminDashboard/*" element={<AdminDashboard />} />
                 <Route path="*" element={<Navigate to="/AdminDashboard" />} />
               </>
             )}
@@ -43,6 +44,11 @@ const AppLayout = () => {
                 <Route path="/CommunityPage" element={
                   <ClientLayout userRole="general">
                     <CommunityPage />
+                  </ClientLayout>
+                } />
+                <Route path="/MyClubsPage" element={
+                  <ClientLayout userRole="general">
+                    <MyClubs/>
                   </ClientLayout>
                 } />
                 <Route path="/CreateClubPage" element={
