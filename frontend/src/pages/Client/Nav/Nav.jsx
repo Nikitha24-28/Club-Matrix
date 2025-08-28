@@ -38,6 +38,12 @@ const Nav = ({ userRole = 'general', userStatus = 'member', currentClub = null }
       roles: ['general', 'member', 'coordinator']
     },
     { 
+      icon: <Home size={20} />, 
+      label: "My Clubs", 
+      link: "/MyClubsPage",
+      roles: ['general', 'member', 'coordinator']
+    },
+    { 
       icon: <TrendingUp size={20} />, 
       label: "Profile", 
       link: "/ProfilePage",
@@ -59,12 +65,6 @@ const Nav = ({ userRole = 'general', userStatus = 'member', currentClub = null }
       icon: <Settings size={20} />, 
       label: "Settings", 
       link: "/SettingsPage",
-      roles: ['general', 'member', 'coordinator']
-    },
-    {
-      icon: <Settings size={20} />,
-      label: "Logout", 
-      link: "LOGOUT",
       roles: ['general', 'member', 'coordinator']
     }
   ];
@@ -181,9 +181,9 @@ const Nav = ({ userRole = 'general', userStatus = 'member', currentClub = null }
     <div className="sidebar-nav">
       <div className="sidebar-header">
         <div className="logo-title">
-          <div className="logo">
+          {/* <div className="logo">
             <span>CM</span>
-          </div>
+          </div> */}
           <h1>Club Matrix</h1>
         </div>
         {currentClub && (
@@ -199,7 +199,7 @@ const Nav = ({ userRole = 'general', userStatus = 'member', currentClub = null }
         )}
       </div>
 
-      <nav className="sidebar-nav">
+      <nav className="sidebar-navigation">
         <div className="nav-items">
           {navItems.map(({ icon, label, link }, idx) => (
             <div
@@ -216,22 +216,21 @@ const Nav = ({ userRole = 'general', userStatus = 'member', currentClub = null }
 
       <div className="sidebar-footer">
         <div className="user-info">
-          <div className="logout-wrapper">
-            <button className="logout" onClick={handleLogout}>
-            Logout
-            </button>
-          </div>
-        
-          <div className="user-avatar">
+          {/* <div className="user-avatar">
             <span>JD</span>
-          </div>
-          <div className="user-details">
+          </div> */}
+          {/* <div className="user-details">
             <p>John Doe</p>
             <p className="role">
               {userStatus === 'coordinator' ? 'Coordinator' : 
                userStatus === 'member' ? 'Member' : 'Student'}
             </p>
-          </div>
+          </div> */}
+        </div>
+        <div className="logout-section">
+          <button className="logout-button" onClick={handleLogout}>
+            Logout
+          </button>
         </div>
       </div>
     </div>
