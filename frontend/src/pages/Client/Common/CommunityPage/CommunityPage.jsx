@@ -1,172 +1,302 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./CommunityPage.css";
 import {
   Users, Calendar, Settings, TrendingUp, Plus,
-  Search, Bell, Filter, Star, Clock, ChevronRight
+  Search, Bell, Filter, Star, Clock, ChevronRight, Loader2
 } from "lucide-react";
 import ClientLayout from "../../Nav/ClientLayout";
 
 const CommunityPage = () => {
-  return (
-    // <ClientLayout userRole="general">
-    //   <div className="community-page" style={{ display: "flex", height: "100%", maxWidth:"80%" }}>
+  const [clubs, setClubs] = useState([]);
+  const [filteredClubs, setFilteredClubs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
+  // Fetch public clubs from backend
+  useEffect(() => {
+    const fetchPublicClubs = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('http://localhost:5000/clubs/public');
         
-    //     {/* Main Content (middle section) */}
-    //     <div className="main-content" style={{ flex: "1", padding: "0px" }}>
-    //       <header className="main-header">
-    //         <div className="header-top">
-    //           <div className="header-title">
-    //             <h2>Discover Clubs</h2>
-    //             <p>Find and join amazing clubs in your community</p>
-    //           </div>
-    //           <div className="header-actions">
-    //             <div className="search-bar">
-    //               <Search className="search-icon" size={18} />
-    //               <input type="text" placeholder="Search clubs..." />
-    //             </div>
-    //             <button className="filter-btn">
-    //               <Filter size={20} />
-    //             </button>
-    //             <button className="notification-btn">
-    //               <Bell size={20} />
-    //             </button>
-    //           </div>
-    //         </div>
-    //       </header>
+        if (!response.ok) {
+          throw new Error('Failed to fetch clubs');
+        }
+        
+        const data = await response.json();
+        console.log('Fetched clubs data:', data); // Debug log
+        setClubs(data);
+        setFilteredClubs(data);
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching clubs:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    //       <main className="clubs-grid">
-    //         {[
-    //           { name: "Tech Innovators", members: 248, category: "Technology", color: "blue" },
-    //           { name: "Design Studio", members: 156, category: "Design", color: "purple" },
-    //           { name: "Startup Hub", members: 312, category: "Business", color: "green" },
-    //           { name: "Photography Club", members: 89, category: "Arts", color: "orange" },
-    //           { name: "Music Collective", members: 203, category: "Music", color: "indigo" },
-    //           { name: "Sports League", members: 445, category: "Sports", color: "teal" }
-    //         ].map((club, index) => (
-    //           <div key={index} className={`club-card ${club.color}`}>
-    //             <div className="club-header">
-    //               <div className="club-icon">
-    //                 <Users className="users-icon" size={24} />
-    //               </div>
-    //               <div className="club-rating">
-    //                 <Star className="star-icon" size={16} />
-    //                 <span>4.8</span>
-    //               </div>
-    //             </div>
+    fetchPublicClubs();
+  }, []);
 
-    //             <h3>{club.name}</h3>
-    //             <div className="club-info">
-    //               <span>{club.members} members</span>
-    //               <span className="category">{club.category}</span>
-    //             </div>
+  // Filter clubs based on search term and category
+  useEffect(() => {
+    let filtered = clubs;
 
-    //             <p className="club-description">
-    //               Join our vibrant community of passionate individuals and unlock new opportunities for growth and collaboration.
-    //             </p>
+    // Filter by search term
+    if (searchTerm) {
+      filtered = filtered.filter(club =>
+        club.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        club.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        club.category?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
 
-    //             <div className="club-actions">
-    //               <button className="view-details-btn">View Details</button>
-    //               <button className="join-btn">Join</button>
-    //             </div>
-    //           </div>
-    //         ))}
-    //       </main>
-    //     </div>
+    // Filter by category
+    if (selectedCategory !== "All") {
+      filtered = filtered.filter(club => club.category === selectedCategory);
+    }
 
-    //     {/* Right Sidebar */}
-    //     <div className="right-sidebar" style={{ flex: "1", backgroundColor: "#fafafa", padding: "0px" }}>
-    //       <div className="overview-header">
-    //         <h3>Overview</h3>
-    //       </div>
+    setFilteredClubs(filtered);
+  }, [clubs, searchTerm, selectedCategory]);
 
-    //       <div className="overview-content">
-    //         {/* My Clubs */}
-    //         <div className="my-clubs">
-    //           <div className="my-clubs-header">
-    //             <h4>My Clubs</h4>
-    //             <span>3 active</span>
-    //           </div>
-    //           <div className="my-clubs-list">
-    //             {[
-    //               { name: "Design Studio", status: "Active", color: "purple" },
-    //               { name: "Tech Innovators", status: "Active", color: "blue" },
-    //               { name: "Music Collective", status: "Active", color: "indigo" }
-    //             ].map((club, index) => (
-    //               <div key={index} className="my-club-item">
-    //                 <div className={`my-club-avatar ${club.color}`}>
-    //                   <Users size={14} />
-    //                 </div>
-    //                 <div className="my-club-info">
-    //                   <p>{club.name}</p>
-    //                   <p className="status">{club.status}</p>
-    //                 </div>
-    //                 <ChevronRight className="chevron-icon" size={16} />
-    //               </div>
-    //             ))}
-    //           </div>
-    //         </div>
+  // Get unique categories for filter
+  const categories = ["All", ...new Set(clubs.map(club => club.category).filter(Boolean))];
 
-    //         {/* Progress */}
-    //         <div className="progress-section">
-    //           <h4>Progress</h4>
-    //           {[
-    //             { label: "Club Participation", value: "85%", color: "blue", width: "85%" },
-    //             { label: "Events Attended", value: "12/15", color: "green", width: "80%" }
-    //           ].map((item, i) => (
-    //             <div key={i} className={`progress-bar-wrapper ${item.color}`}>
-    //               <div className="progress-bar-header">
-    //                 <span>{item.label}</span>
-    //                 <span>{item.value}</span>
-    //               </div>
-    //               <div className="progress-bar-bg">
-    //                 <div className="progress-bar-fill" style={{ width: item.width }}></div>
-    //               </div>
-    //             </div>
-    //           ))}
-    //         </div>
+  // Color mapping for different categories
+  const getCategoryColor = (category) => {
+    const colorMap = {
+      'Technology': 'blue',
+      'Design': 'purple',
+      'Business': 'green',
+      'Arts': 'orange',
+      'Music': 'indigo',
+      'Sports': 'teal',
+      'Education': 'pink',
+      'Health': 'red',
+      'Environment': 'emerald',
+      'Social': 'amber'
+    };
+    return colorMap[category] || 'blue';
+  };
 
-    //         {/* Quick Stats */}
-    //         <div className="quick-stats">
-    //           <h4>Quick Stats</h4>
-    //           <div className="stats-grid">
-    //             <div className="stat-card blue">
-    //               <p className="stat-number">3</p>
-    //               <p>Clubs Joined</p>
-    //             </div>
-    //             <div className="stat-card purple">
-    //               <p className="stat-number">24</p>
-    //               <p>Events</p>
-    //             </div>
-    //           </div>
-    //         </div>
+  // Handle join club
+  const handleJoinClub = (clubId) => {
+    // TODO: Implement join club functionality
+    console.log('Joining club:', clubId);
+    alert('Join functionality will be implemented soon!');
+  };
 
-    //         {/* Recent Activity */}
-    //         <div className="recent-activity">
-    //           <h4>Recent Activity</h4>
-    //           <div className="activity-list">
-    //             {[
-    //               { action: "Joined Tech Innovators", time: "2 hours ago" },
-    //               { action: "Attended Design Workshop", time: "1 day ago" },
-    //               { action: "Created Music Event", time: "2 days ago" }
-    //             ].map((activity, index) => (
-    //               <div key={index} className="activity-item">
-    //                 <div className="activity-dot"></div>
-    //                 <div className="activity-info">
-    //                   <p>{activity.action}</p>
-    //                   <p className="activity-time">
-    //                     <Clock size={12} />
-    //                     {activity.time}
-    //                   </p>
-    //                 </div>
-    //               </div>
-    //             ))}
-    //           </div>
-    //         </div>
-    //       </div>
-    //     </div>
-    //   </div>
-    // </ClientLayout>
-    <div>Public Club Page , Comming Soon </div>
+  // Handle view details
+  const handleViewDetails = (clubId) => {
+    // TODO: Implement view details functionality
+    console.log('Viewing details for club:', clubId);
+    alert('View details functionality will be implemented soon!');
+  };
+
+  if (loading) {
+    return (
+      <ClientLayout userRole="general">
+        <div className="community-page">
+          <div className="loading-container">
+            <Loader2 className="loading-spinner" size={48} />
+            <p>Loading public clubs...</p>
+          </div>
+        </div>
+      </ClientLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <ClientLayout userRole="general">
+        <div className="community-page">
+          <div className="error-container">
+            <h2>Error Loading Clubs</h2>
+            <p>{error}</p>
+            <button onClick={() => window.location.reload()} className="retry-btn">
+              Try Again
+            </button>
+          </div>
+        </div>
+      </ClientLayout>
+    );
+  }
+
+  return (
+    <ClientLayout userRole="general">
+      <div className="community-page">
+        {/* Main Content */}
+        <div className="main-content">
+          <header className="main-header">
+            <div className="header-top">
+              <div className="header-title">
+                <h2>Discover Public Clubs</h2>
+                <p>Find and join amazing clubs in your community</p>
+              </div>
+              <div className="header-actions">
+                <div className="search-bar">
+                  <Search className="search-icon" size={18} />
+                  <input 
+                    type="text" 
+                    placeholder="Search clubs..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <div className="filter-dropdown">
+                  <select 
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="category-filter"
+                  >
+                    {categories.map(category => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <button className="notification-btn">
+                  <Bell size={20} />
+                </button>
+              </div>
+            </div>
+          </header>
+
+          <main className="clubs-grid">
+            {filteredClubs.length === 0 ? (
+              <div className="no-clubs">
+                <Users size={48} />
+                <h3>No clubs found</h3>
+                <p>
+                  {searchTerm || selectedCategory !== "All" 
+                    ? "Try adjusting your search or filter criteria"
+                    : "No public clubs are available at the moment"
+                  }
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Club Cards Section */}
+                <div className="clubs-section">
+                  {filteredClubs.map((club, index) => (
+                    <div key={club.id || index} className={`club-card ${getCategoryColor(club.category)}`}>
+                      <div className="club-header">
+                        <div className="club-icon">
+                          <Users className="users-icon" size={24} />
+                        </div>
+                        <div className="club-rating">
+                          <Star className="star-icon" size={16} />
+                          <span>{club.rating || "4.5"}</span>
+                        </div>
+                      </div>
+
+                      <h3>{club.club_name || `Club ${index + 1}`}</h3>
+                      <div className="club-info">
+                        <span>{club.member_count || club.members || "0"} members</span>
+                        <span className="category">{club.category}</span>
+                      </div>
+
+                      <p className="club-description">
+                        {club.description || "Join our vibrant community of passionate individuals and unlock new opportunities for growth and collaboration."}
+                      </p>
+
+                      <div className="club-actions">
+                        <button 
+                          className="view-details-btn"
+                          onClick={() => handleViewDetails(club.id)}
+                        >
+                          View Details
+                        </button>
+                        <button 
+                          className="join-btn"
+                          onClick={() => handleJoinClub(club.id)}
+                        >
+                          Join
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Overview Section */}
+                <div className="overview-card">
+                  <div className="overview-header">
+                    <h3>Overview</h3>
+                  </div>
+
+                  <div className="overview-content">
+                    {/* Quick Stats */}
+                    <div className="quick-stats">
+                      <h4>Quick Stats</h4>
+                      <div className="stats-grid">
+                        <div className="stat-card blue">
+                          <p className="stat-number">{clubs.length}</p>
+                          <p>Public Clubs</p>
+                        </div>
+                        <div className="stat-card purple">
+                          <p className="stat-number">{categories.length - 1}</p>
+                          <p>Categories</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Categories */}
+                    <div className="categories-section">
+                      <h4>Categories</h4>
+                      <div className="categories-list">
+                        {categories.slice(1).map((category, index) => (
+                          <div 
+                            key={category} 
+                            className={`category-item ${selectedCategory === category ? 'active' : ''}`}
+                            onClick={() => setSelectedCategory(category)}
+                          >
+                            <div className={`category-dot ${getCategoryColor(category)}`}></div>
+                            <span>{category}</span>
+                            <span className="category-count">
+                              {clubs.filter(club => club.category === category).length}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Recent Activity */}
+                    <div className="recent-activity">
+                      <h4>Recent Activity</h4>
+                      <div className="activity-list">
+                        <div className="activity-item">
+                          <div className="activity-dot"></div>
+                          <div className="activity-info">
+                            <p>New clubs added</p>
+                            <p className="activity-time">
+                              <Clock size={12} />
+                              Recently
+                            </p>
+                          </div>
+                        </div>
+                        <div className="activity-item">
+                          <div className="activity-dot"></div>
+                          <div className="activity-info">
+                            <p>Community growing</p>
+                            <p className="activity-time">
+                              <Clock size={12} />
+                              This week
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </main>
+        </div>
+      </div>
+    </ClientLayout>
   );
 };
 

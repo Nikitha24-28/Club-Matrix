@@ -50,7 +50,23 @@ app.post("/login", (req, res) => {
     });
 });
 
+// Route to get all Public Clubs
+app.get("/clubs/public", (req, res) => {
+    const query = `SELECT * FROM clubs WHERE visibility = 'Public' AND status = 'Active'`;
 
+    dbase.query(query, (err, results) => {
+        if (err) {
+            console.error("Error fetching public clubs:", err);
+            return res.status(500).json({ error: "Database query failed" });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ message: "No public clubs found" });
+        }
+
+        res.status(200).json(results);
+    });
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
