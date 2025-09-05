@@ -1,11 +1,37 @@
 import React from 'react'
+import axios from "axios";
 import './CreateClub.css';
 
 const CreateClub = () => {
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    const userEmail = localStorage.getItem("email");
+  
+    const formData = {
+      clubName: e.target.ClubName.value,
+      clubDescription: e.target.ClubDescription.value,
+      clubCategory: e.target.ClubCategory.value,
+      clubHead: e.target.ClubHead.value,
+      clubEmail: e.target.ClubEmail.value,
+      clubSocialMedia: e.target.ClubSocialMedia.value,
+      clubLogo: e.target.clubLogo.files[0]?.name || "",
+      userEmail
+    };
+  
+    try {
+      const res = await axios.post("http://localhost:5000/create", formData);
+      alert(res.data.message);
+    } catch (err) {
+      alert(err.response?.data?.message || "Error creating club");
+    }
+  };
+
   return (
     <div className='create-club-content'>
       <h1> Create a Club </h1>
-      <form>
+      <form onSubmit={handleSubmit}>
           <label>Club Name:</label>
           <input type="text" name="ClubName" placeholder="Enter Club Name" required />
           <br/>
