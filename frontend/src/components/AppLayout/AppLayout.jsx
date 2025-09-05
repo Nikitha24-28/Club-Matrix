@@ -4,7 +4,9 @@ import Login from '../Login/Login';
 import CommunityPage from '../../pages/Client/Common/CommunityPage/CommunityPage';
 import AdminDashboard from "../../pages/Admin/Dashboard/AdminDashboard";
 import CreateClub from '../../pages/Client/Common/CreateClub/CreateClub';
-import PriorLogin from "../../pages/priorlogin/priorlogin"; // import landing page
+import JoinRequests from "../../pages/Client/Common/JoinRequests/JoinRequests"
+import PriorLogin from "../../pages/priorlogin/priorlogin"; 
+import Profile from '../../pages/Client/Common/Profile/Profile'
 import Nav from '../../pages/Client/Nav/Nav';
 import MyClubs from '../../pages/Client/Coordinator/MyClubs/MyClubs';
 import ClientLayout from '../../pages/Client/Nav/ClientLayout';
@@ -58,12 +60,12 @@ const AppLayout = () => {
                 } />
                 <Route path="/ProfilePage" element={
                   <ClientLayout userRole="general">
-                    <div>Profile Page - Coming Soon</div>
+                    <Profile/>
                   </ClientLayout>
                 } />
                 <Route path="/JoinRequestsPage" element={
                   <ClientLayout userRole="general">
-                    <div>Join Requests Page - Coming Soon</div>
+                    <JoinRequests/>
                   </ClientLayout>
                 } />
                 <Route path="/SettingsPage" element={
