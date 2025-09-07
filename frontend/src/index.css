@@ -1,0 +1,120 @@
+/* Global CSS Reset and Viewport Fixes */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100% !important;
+  width: 100% !important;
+  overflow: hidden !important;
+}
+
+body {
+  margin: 0 !important;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
+/* Force all main layout containers to respect viewport height */
+.client-layout,
+.dashboard-wrapper,
+.page-wrapper {
+  height: 100vh !important;
+  max-height: 100vh !important;
+  overflow: hidden !important;
+  display: flex !important;
+}
+
+/* Force content areas to be scrollable and fit within viewport */
+.client-content,
+.dashboard-content,
+.page-content {
+  overflow-y: auto !important;
+  flex: 1 !important;
+  max-height: 100vh !important;
+}
+
+/* Force all page containers to fit within viewport */
+.myclubs-container,
+.community-container,
+.profile-container,
+.create-club-container,
+.join-requests-container {
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+}
+
+/* Ensure sidebar is always visible */
+.sidebar-nav {
+  height: 100vh !important;
+  max-height: 100vh !important;
+  overflow-y: auto !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  z-index: 1000 !important;
+}
+
+/* Force sidebar footer to be visible */
+.sidebar-footer {
+  position: relative !important;
+  bottom: 0 !important;
+  margin-top: auto !important;
+  background-color: #f8f9fa !important;
+  border-top: 1px solid #e9ecef !important;
+  padding: 1.5rem !important;
+  flex-shrink: 0 !important;
+}
+
+/* Ensure logout button is visible and properly styled */
+.logout-button {
+  background-color: #dc3545 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 0.75rem 1rem !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  width: 100% !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3) !important;
+  transition: all 0.2s ease !important;
+  position: relative !important;
+  z-index: 100 !important;
+}
+
+.logout-button:hover {
+  background-color: #c82333 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3) !important;
+}
+
+/* Ensure sidebar footer is properly positioned */
+.sidebar-footer {
+  background-color: #f8f9fa !important;
+  border-top: 1px solid #e9ecef !important;
+  padding: 1.5rem !important;
+  flex-shrink: 0 !important;
+  position: relative !important;
+  z-index: 100 !important;
+  margin-top: auto !important;
+}
+
+/* Ensure sidebar is properly sized and positioned */
+.sidebar-nav {
+  background-color: #ffffff !important;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1) !important;
+}

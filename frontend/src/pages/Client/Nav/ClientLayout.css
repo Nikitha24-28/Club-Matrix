@@ -1,6 +1,7 @@
 .client-layout {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .client-content {
@@ -8,6 +9,7 @@
   margin-left: 150px; /* Further reduced to completely eliminate gap */
   min-width: 0; /* Prevents flex item from overflowing */
   background-color: #f8fafc;
+  overflow-y: auto;
 }
 
 /* Responsive design */
