@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import ClientLayout from "../../Nav/ClientLayout";
 
+
 const CommunityPage = () => {
   const [clubs, setClubs] = useState([]);
   const [filteredClubs, setFilteredClubs] = useState([]);
@@ -19,7 +20,7 @@ const CommunityPage = () => {
     const fetchPublicClubs = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:5000/clubs/public');
+        const response = await fetch('http://localhost:5000/clubs_fetch');
         
         if (!response.ok) {
           throw new Error('Failed to fetch clubs');

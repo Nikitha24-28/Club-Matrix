@@ -1,143 +1,231 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Profile.css';
 
 const Profile = () => {
-  const [profile, setProfile] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [profileData, setProfileData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const email = useMemo(() => localStorage.getItem('email') || '', []);
+  // Check if sidebar is collapsed
+  useEffect(() => {
+    const checkSidebarState = () => {
+      const sidebarSelectors = ['.sidebar', '.side-nav', '.navigation', '.nav-sidebar'];
+      let sidebar = null;
+      
+      for (const selector of sidebarSelectors) {
+        sidebar = document.querySelector(selector);
+        if (sidebar) break;
+      }
+      
+      if (sidebar) {
+        const isCollapsed = sidebar.classList.contains('collapsed') || 
+                           sidebar.classList.contains('closed') || 
+                           sidebar.classList.contains('hidden') ||
+                           window.getComputedStyle(sidebar).width === '0px';
+        setSidebarCollapsed(isCollapsed);
+      }
+    };
 
+    checkSidebarState();
+    const observer = new MutationObserver(checkSidebarState);
+    const sidebar = document.querySelector('.sidebar, .side-nav, .navigation, .nav-sidebar');
+    if (sidebar) {
+      observer.observe(sidebar, { attributes: true, attributeFilter: ['class', 'style'] });
+    }
+    window.addEventListener('resize', checkSidebarState);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', checkSidebarState);
+    };
+  }, []);
+
+  // ✅ Fetch profile data from backend
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!email) {
-        setError('No user email found. Please log in again.');
-        setIsLoading(false);
-        return;
-      }
-
       try {
-        setIsLoading(true);
-        setError('');
-        const { data } = await axios.get(`http://localhost:5000/profile/${encodeURIComponent(email)}`);
-        setProfile(data);
+        const mail = localStorage.getItem("email");
+        if (!mail) {
+          console.error("No mail found in localStorage");
+          setLoading(false);
+          return;
+        }
+
+        const res = await axios.get(`http://localhost:5000/profile/${mail}`);
+        const data = res.data;
+
+        // ✅ Normalize clubs into an array
+        const clubs = [];
+        if (data.club1_name) {
+          clubs.push({
+            id: 1,
+            name: data.club1_name,
+            role: data.club1_role,
+            description: data.club1_description,
+            category: data.club1_category,
+            logo: data.club1_logo || "https://via.placeholder.com/100", // optional if you want logos
+          });
+        }
+        if (data.club2_name) {
+          clubs.push({
+            id: 2,
+            name: data.club2_name,
+            role: data.club2_role,
+            description: data.club2_description,
+            category: data.club2_category,
+            logo: data.club2_logo || "https://via.placeholder.com/100",
+          });
+        }
+        if (data.club3_name) {
+          clubs.push({
+            id: 3,
+            name: data.club3_name,
+            role: data.club3_role,
+            description: data.club3_description,
+            category: data.club3_category,
+            logo: data.club3_logo || "https://via.placeholder.com/100",
+          });
+        }
+
+        setProfileData({
+          fullName: data.full_name,
+          phoneNumber: data.phone_number,
+          dateOfBirth: data.date_of_birth,
+          gender: data.gender,
+          address: data.address,
+          email: data.mail,
+          profileImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face", // placeholder, replace if you store profile pics
+          clubs,
+        });
+
+        setLoading(false);
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to load profile');
-      } finally {
-        setIsLoading(false);
+        console.error("Error fetching profile:", err);
+        setLoading(false);
       }
     };
 
     fetchProfile();
-  }, [email]);
+  }, []);
 
-  const renderClub = (clubId, clubRole, idx) => {
-    if (!clubId && !clubRole) return null;
-    return (
-      <div className="profile-club" key={`club-${idx}`}>
-        <div className="profile-club-badge">Club {idx}</div>
-        <div className="profile-club-fields">
-          <div className="profile-field">
-            <span className="label">Club ID</span>
-            <span className="value">{clubId || '—'}</span>
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const calculateAge = (dateOfBirth) => {
+    if (!dateOfBirth) return "-";
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  if (loading) {
+    return <div className="profile-container">Loading profile...</div>;
+  }
+
+  if (!profileData) {
+    return <div className="profile-container">No profile data found.</div>;
+  }
+
+  return (
+    <div className={`profile-container ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      <div className="profile-header">
+        <div className="profile-image-container">
+          <img 
+            src={profileData.profileImage} 
+            alt="Profile" 
+            className="profile-image"
+          />
+          <div className="profile-status">
+            <span className="status-dot"></span>
+            <span>Active</span>
           </div>
-          <div className="profile-field">
-            <span className="label">Role</span>
-            <span className="value">{clubRole || '—'}</span>
+        </div>
+        <div className="profile-basic-info">
+          <h1 className="profile-name">{profileData.fullName}</h1>
+          <p className="profile-email">{profileData.email}</p>
+          <div className="profile-stats">
+            <div className="stat">
+              <span className="stat-number">{profileData.clubs.length}</span>
+              <span className="stat-label">Clubs</span>
+            </div>
+            <div className="stat">
+              <span className="stat-number">{calculateAge(profileData.dateOfBirth)}</span>
+              <span className="stat-label">Years Old</span>
+            </div>
           </div>
         </div>
       </div>
-    );
-  };
 
-  const getAvatarInitials = () => {
-    const name = profile?.name || email || '';
-    const parts = String(name).trim().split(/\s+/).filter(Boolean);
-    if (parts.length === 0) return '?';
-    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-    return `${parts[0].charAt(0)}${parts[parts.length - 1].charAt(0)}`.toUpperCase();
-  };
-
-  return (
-    <div className="profile-container">
-      {isLoading && (
-        <div className="profile-state">
-          <div className="spinner" />
-          <p>Loading your profile…</p>
-        </div>
-      )}
-
-      {!isLoading && error && (
-        <div className="profile-state error">
-          <p>{error}</p>
-        </div>
-      )}
-
-      {!isLoading && !error && profile && (
-        <div className="profile-card">
-          <div className="profile-header">
-            <div className="avatar">{getAvatarInitials()}</div>
-            <div className="header-text">
-              <h1 className="title">{profile.name || 'User'}</h1>
-              <p className="subtitle">{profile.email}</p>
+      <div className="profile-content">
+        <div className="profile-section">
+          <h2 className="section-title">Personal Information</h2>
+          <div className="info-grid">
+            <div className="info-item">
+              <label>Full Name</label>
+              <span>{profileData.fullName}</span>
             </div>
-            <div className="role-chip">{profile.role}</div>
-          </div>
-
-          <div className="profile-grid">
-            <div className="profile-section">
-              <h2 className="section-title">Account</h2>
-              <div className="profile-field">
-                <span className="label">User Since</span>
-                <span className="value">{new Date(profile.created_at).toLocaleDateString()}</span>
-              </div>
-              <div className="profile-field">
-                <span className="label">Client ID</span>
-                <span className="value">{profile.client_id}</span>
-              </div>
-              <div className="profile-field">
-                <span className="label">Registration No.</span>
-                <span className="value">{profile.reg_no || '—'}</span>
-              </div>
+            <div className="info-item">
+              <label>Phone Number</label>
+              <span>{profileData.phoneNumber}</span>
             </div>
-
-            <div className="profile-section">
-              <h2 className="section-title">Contact</h2>
-              <div className="profile-field">
-                <span className="label">Phone</span>
-                <span className="value">{profile.phone || '—'}</span>
-              </div>
-              <div className="profile-field">
-                <span className="label">Department</span>
-                <span className="value">{profile.department || '—'}</span>
-              </div>
-              <div className="profile-inline">
-                <div className="profile-field">
-                  <span className="label">Year</span>
-                  <span className="value">{profile.year || '—'}</span>
-                </div>
-                <div className="profile-field">
-                  <span className="label">Section</span>
-                  <span className="value">{profile.section || '—'}</span>
-                </div>
-              </div>
+            <div className="info-item">
+              <label>Date of Birth</label>
+              <span>{formatDate(profileData.dateOfBirth)}</span>
             </div>
-
-            <div className="profile-section full">
-              <h2 className="section-title">Club Memberships</h2>
-              <div className="profile-clubs">
-                {renderClub(profile.club1_id, profile.club1_role, 1)}
-                {renderClub(profile.club2_id, profile.club2_role, 2)}
-                {renderClub(profile.club3_id, profile.club3_role, 3)}
-                {!profile.club1_id && !profile.club2_id && !profile.club3_id && (
-                  <div className="profile-empty">Not a member of any clubs yet.</div>
-                )}
-              </div>
+            <div className="info-item">
+              <label>Gender</label>
+              <span>{profileData.gender}</span>
+            </div>
+            <div className="info-item full-width">
+              <label>Address</label>
+              <span>{profileData.address}</span>
             </div>
           </div>
         </div>
-      )}
+
+        <div className="profile-section">
+          <h2 className="section-title">My Clubs</h2>
+          <div className="clubs-grid">
+            {profileData.clubs.map((club) => (
+              <div key={club.id} className="club-card">
+                <div className="club-header">
+                  <img 
+                    src={club.logo} 
+                    alt={club.name} 
+                    className="club-logo"
+                  />
+                  <div className="club-info">
+                    <h3 className="club-name">{club.name}</h3>
+                    <span className="club-category">{club.category}</span>
+                  </div>
+                </div>
+                <p className="club-description">{club.description}</p>
+                <div className="club-details">
+                  <div className="club-role">
+                    <span className="role-badge">{club.role}</span>
+                  </div>
+                  <div className="club-stats">
+                    {/* Optionally show stats if you extend DB */}
+                    <span className="established-date">Club</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
