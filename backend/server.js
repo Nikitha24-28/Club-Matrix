@@ -69,6 +69,65 @@ app.get("/clubs_fetch", async (req, res) => {
 });
 
 
+// ✅ Profile routes (GET + POST)
+
+app.get("/profile/:email", async (req, res) => {
+  const { email } = req.params;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+
+  const query = `
+    SELECT 
+        c.full_name,
+        c.mail,
+        c.phone_number,
+        c.date_of_birth,
+        c.gender,
+        c.address,
+
+        -- Club 1
+        c.club1_role AS club1_role,
+        cl1.club_name AS club1_name,
+        cl1.description AS club1_description,
+        cl1.category AS club1_category,
+
+        -- Club 2
+        c.club2_role AS club2_role,
+        cl2.club_name AS club2_name,
+        cl2.description AS club2_description,
+        cl2.category AS club2_category,
+
+        -- Club 3
+        c.club3_role AS club3_role,
+        cl3.club_name AS club3_name,
+        cl3.description AS club3_description,
+        cl3.category AS club3_category
+
+    FROM clients c
+    LEFT JOIN clubs cl1 ON c.club1_id = cl1.club_id
+    LEFT JOIN clubs cl2 ON c.club2_id = cl2.club_id
+    LEFT JOIN clubs cl3 ON c.club3_id = cl3.club_id
+    WHERE c.mail = ?;
+  `;
+
+  try {
+    const [rows] = await dbase.query(query, [email]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Profile not found" });
+    }
+
+    res.json(rows[0]); // ✅ send profile data
+  } catch (err) {
+    console.error("Error fetching profile:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+// ✅ Keep POST version for backward compatibility
 app.post("/profile", async (req, res) => {
   const { email } = req.body;
 
@@ -117,7 +176,7 @@ app.post("/profile", async (req, res) => {
       return res.status(404).json({ message: "Profile not found" });
     }
 
-    res.json(rows[0]); // ✅ return single profile
+    res.json(rows[0]); // ✅ send profile data
   } catch (err) {
     console.error("Error fetching profile:", err);
     res.status(500).json({ message: "Server error" });
