@@ -184,87 +184,93 @@ app.post("/profile", async (req, res) => {
 });
 
 
-//CREATE CLUB PAGE BACKEND
+// CREATE CLUB HANDLER
+const handleCreateClub = async (req, res) => {
+  try {
+    const {
+      clubName,
+      clubDescription,
+      clubCategory,
+      clubHead,
+      clubEmail,
+      clubSocialMedia,
+      clubLogo,
+      userEmail // from frontend localStorage
+    } = req.body;
 
-// // Support both legacy and new paths
-// const handleCreateClub = async (req, res) => {
-//     try {
-//       const {
-//         clubName,
-//         clubDescription,
-//         clubCategory,
-//         clubHead,
-//         clubEmail,
-//         clubSocialMedia,
-//         clubLogo,
-//         userEmail // send from frontend (localStorage)
-//       } = req.body;
-  
-//       // 1. Get login_id from login table
-//       const [loginRows] = await dbase.query(
-//         "SELECT id FROM login WHERE email = ?",
-//         [userEmail]
-//       );
-  
-//       if (loginRows.length === 0) {
-//         return res.status(400).json({ message: "User not found" });
-//       }
-//       const loginId = loginRows[0].id;
-  
-//       // 2. Get client info
-//       const [clientRows] = await dbase.query(
-//         "SELECT club1_id, club2_id, club3_id FROM clients WHERE login_id = ?",
-//         [loginId]
-//       );
-  
-//       if (clientRows.length === 0) {
-//         return res.status(400).json({ message: "Client not found" });
-//       }
-  
-//       const { club1_id, club2_id, club3_id } = clientRows[0];
-  
-//       // 3. Check if already part of 3 clubs
-//       if (club1_id && club2_id && club3_id) {
-//         return res.status(403).json({
-//           message:
-//             "Already a part of 3 clubs. Upgrade to pro for more features."
-//         });
-//       }
-  
-//       // 4. Insert into clubs table
-//       const clubCode =
-//         clubName.substring(0, 2).toUpperCase() +
-//         Date.now().toString().slice(-2); // simple code generator
-  
-//       await dbase.query(
-//         `INSERT INTO clubs 
-//           (name, code, description, category, established_date, head_name, email, phone, social_link, website, logo, is_verified, visibility, status, created_at, updated_at) 
-//         VALUES (?, ?, ?, ?, NOW(), ?, ?, NULL, ?, NULL, ?, 0, 'Public', 'Active', NOW(), NOW())`,
-//         [
-//           clubName,
-//           clubCode,
-//           clubDescription,
-//           clubCategory,
-//           clubHead,
-//           clubEmail,
-//           clubSocialMedia,
-//           clubLogo || "/uploads/logos/default.png"
-//         ]
-//       );
-  
-//       // 5. Success response
-//       return res
-//         .status(201)
-//         .json({ message: "New club added, congratulations on your new club!" });
-//     } catch (error) {
-//       console.error("Error creating club:", error);
-//       return res.status(500).json({ message: "Server error" });
-//     }
-//   };
+    // 1. Get login_id
+    const [loginRows] = await dbase.query(
+      "SELECT id FROM login WHERE email = ?",
+      [userEmail]
+    );
 
-// app.post("/create", handleCreateClub);
-// app.post("/api/clubs/create", handleCreateClub);
+    if (loginRows.length === 0) {
+      return res.status(400).json({ message: "User not found" });
+    }
+    const loginId = loginRows[0].id;
 
+    // 2. Get client info
+    const [clientRows] = await dbase.query(
+      "SELECT client_id, club1_id, club2_id, club3_id FROM clients WHERE login_id = ?",
+      [loginId]
+    );
+
+    if (clientRows.length === 0) {
+      return res.status(400).json({ message: "Client not found" });
+    }
+
+    const { client_id, club1_id, club2_id, club3_id } = clientRows[0];
+
+    // 3. Check if already part of 3 clubs
+    if (club1_id && club2_id && club3_id) {
+      return res.status(403).json({
+        message: "Already part of 3 clubs, cannot create more."
+      });
+    }
+
+    // 4. Insert new club
+    const [clubResult] = await dbase.query(
+      `INSERT INTO clubs 
+        (club_name, description, category, founded_date, club_head, email, contact_phone, social_media, website, logo_url, member_count, visibility, status, created_at, updated_at) 
+       VALUES (?, ?, ?, CURDATE(), ?, ?, NULL, ?, NULL, ?, 1, 'Public', 'Active', NOW(), NOW())`,
+      [
+        clubName,
+        clubDescription,
+        clubCategory,
+        clubHead,
+        clubEmail,
+        clubSocialMedia || null,
+        clubLogo || "/uploads/logos/default.png"
+      ]
+    );
+
+    const newClubId = clubResult.insertId;
+
+    // 5. Update clients table → add new club in first empty slot with role Coordinator
+    let updateQuery = "";
+    if (!club1_id) {
+      updateQuery = "UPDATE clients SET club1_id = ?, club1_role = 'Coordinator' WHERE client_id = ?";
+    } else if (!club2_id) {
+      updateQuery = "UPDATE clients SET club2_id = ?, club2_role = 'Coordinator' WHERE client_id = ?";
+    } else if (!club3_id) {
+      updateQuery = "UPDATE clients SET club3_id = ?, club3_role = 'Coordinator' WHERE client_id = ?";
+    }
+
+    await dbase.query(updateQuery, [newClubId, client_id]);
+
+    // 6. Success response
+    return res
+      .status(201)
+      .json({ message: "Club created successfully! You are the Coordinator." });
+  } catch (error) {
+    console.error("Error creating club:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Routes
+app.post("/create", handleCreateClub);
+app.post("/api/clubs/create", handleCreateClub);
 
 
 app.listen(PORT, () => {

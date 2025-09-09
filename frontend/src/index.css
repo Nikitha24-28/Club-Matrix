@@ -52,7 +52,7 @@ body {
 .join-requests-container {
   height: 100% !important;
   max-height: 100% !important;
-  overflow: hidden !important;
+  overflow-y: auto !important;
 }
 
 /* Ensure sidebar is always visible */

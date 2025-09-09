@@ -16,13 +16,13 @@ const CreateClub = () => {
       clubHead: e.target.ClubHead.value,
       clubEmail: e.target.ClubEmail.value,
       clubSocialMedia: e.target.ClubSocialMedia.value,
-      clubLogo: e.target.clubLogo.files[0]?.name || "",
+      clubLogo: e.target.clubLogo.files[0]?.name || "", // backend expects string
       userEmail
     };
   
     try {
       const res = await axios.post("http://localhost:5000/create", formData);
-      alert(res.data.message);
+      alert(res.data.message); // success or custom backend message
     } catch (err) {
       alert(err.response?.data?.message || "Error creating club");
     }
