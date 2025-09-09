@@ -1,87 +1,90 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "./MyClubs.css";
 
 const MyClubs = () => {
-    // Dummy data for clubs
-    const [myClubs, setMyClubs] = useState([
-        {
-            id: 1,
-            name: "Computer Science Club",
-            description: "A community for computer science enthusiasts to share knowledge and collaborate on projects.",
-            category: "Technology",
-            role: "President",
-            memberCount: 45,
-            joinDate: "2023-08-15",
-            status: "active"
-        },
-        {
-            id: 2,
-            name: "Photography Society",
-            description: "Capture moments, share stories, and explore the art of photography together.",
-            category: "Arts & Culture",
-            role: "Member",
-            memberCount: 32,
-            joinDate: "2023-09-20",
-            status: "active"
-        },
-        {
-            id: 3,
-            name: "Debate Club",
-            description: "Sharpen your argumentation skills and engage in intellectual discussions.",
-            category: "Academic",
-            role: "Vice President",
-            memberCount: 28,
-            joinDate: "2023-07-10",
-            status: "active"
-        },
-        {
-            id: 4,
-            name: "Environmental Club",
-            description: "Working together to promote sustainability and environmental awareness on campus.",
-            category: "Social Impact",
-            role: "Treasurer",
-            memberCount: 38,
-            joinDate: "2023-10-05",
-            status: "active"
-        },
-        {
-            id: 5,
-            name: "Music Club",
-            description: "For music lovers to jam, perform, and share their passion for all genres.",
-            category: "Arts & Culture",
-            role: "Member",
-            memberCount: 52,
-            joinDate: "2023-11-12",
-            status: "active"
-        }
-    ]);
+    const [myClubs, setMyClubs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // replace with logged-in user's email (can be from auth context/localStorage)
+    const email = localStorage.getItem("email"); 
+
+    useEffect(() => {
+        const fetchClubs = async () => {
+            try {
+                const res = await axios.get(`http://localhost:5000/profile/${email}`);
+                const data = res.data;
+
+                // Transform backend response into club objects
+                const clubs = [];
+
+                if (data.club1_name) {
+                    clubs.push({
+                        id: 1,
+                        name: data.club1_name,
+                        description: data.club1_description,
+                        category: data.club1_category,
+                        role: data.club1_role,
+                        status: "active" // you can extend schema later
+                    });
+                }
+
+                if (data.club2_name) {
+                    clubs.push({
+                        id: 2,
+                        name: data.club2_name,
+                        description: data.club2_description,
+                        category: data.club2_category,
+                        role: data.club2_role,
+                        status: "active"
+                    });
+                }
+
+                if (data.club3_name) {
+                    clubs.push({
+                        id: 3,
+                        name: data.club3_name,
+                        description: data.club3_description,
+                        category: data.club3_category,
+                        role: data.club3_role,
+                        status: "active"
+                    });
+                }
+
+                setMyClubs(clubs);
+            } catch (err) {
+                console.error("Error fetching clubs:", err);
+                setError("Failed to load clubs.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchClubs();
+    }, [email]);
 
     const handleClubClick = (clubId) => {
         console.log(`Clicked on club with ID: ${clubId}`);
-        // Here you would typically navigate to the club details page
-        // For now, just log the action
     };
 
     const getRoleColor = (role) => {
+        if (!role) return "#6c757d";
         switch (role.toLowerCase()) {
-            case 'president':
-                return '#dc3545'; // Red
-            case 'vice president':
-                return '#fd7e14'; // Orange
-            case 'treasurer':
-                return '#20c997'; // Teal
-            case 'secretary':
-                return '#6f42c1'; // Purple
-            case 'member':
-                return '#6c757d'; // Gray
-            default:
-                return '#6c757d';
+            case "president": return "#dc3545";
+            case "vice president": return "#fd7e14";
+            case "treasurer": return "#20c997";
+            case "secretary": return "#6f42c1";
+            case "member": return "#6c757d";
+            default: return "#6c757d";
         }
     };
 
+    if (loading) return <p>Loading clubs...</p>;
+    if (error) return <p>{error}</p>;
+
     return (
         <div className="myclubs-container">
-            {/* Header Section */}
             <div className="myclubs-header">
                 <div className="header-content">
                     <h1 className="main-title">My Clubs</h1>
@@ -90,11 +93,10 @@ const MyClubs = () => {
                 </div>
             </div>
 
-            {/* Main Content Section */}
             <div className="myclubs-content">
                 <div className="content-box">
                     <h2 className="content-heading">Your Club Memberships</h2>
-                    
+
                     {myClubs.length > 0 ? (
                         <div className="clubs-list">
                             {myClubs.map((club) => (
@@ -110,18 +112,16 @@ const MyClubs = () => {
                                                 className="role-badge"
                                                 style={{ backgroundColor: getRoleColor(club.role) }}
                                             >
-                                                {club.role}
+                                                {club.role || "N/A"}
                                             </span>
                                         </div>
                                         <p className="club-description">{club.description}</p>
                                         <div className="club-meta">
                                             <span className="club-category">{club.category}</span>
-                                            <span className="member-count">{club.memberCount} members</span>
-                                            <span className="join-date">Joined: {new Date(club.joinDate).toLocaleDateString()}</span>
                                         </div>
                                     </div>
                                     <div className="club-actions">
-                                        <div className="status-indicator active"></div>
+                                        <div className={`status-indicator ${club.status}`}></div>
                                         <span className="action-arrow">→</span>
                                     </div>
                                 </div>
