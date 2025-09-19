@@ -11,8 +11,6 @@ const PORT = 5000;
 // Middleware
 app.use(bodyParser.json());
 app.use(cors());
-// // Handle CORS preflight for all routes
-// app.options('*', cors());
 
 // Database Connection (promise pool)
 const dbase = mysql.createPool({
@@ -86,29 +84,13 @@ app.get("/profile/:email", async (req, res) => {
         c.date_of_birth,
         c.gender,
         c.address,
-
-        -- Club 1
-        c.club1_role AS club1_role,
-        cl1.club_name AS club1_name,
-        cl1.description AS club1_description,
-        cl1.category AS club1_category,
-
-        -- Club 2
-        c.club2_role AS club2_role,
-        cl2.club_name AS club2_name,
-        cl2.description AS club2_description,
-        cl2.category AS club2_category,
-
-        -- Club 3
-        c.club3_role AS club3_role,
-        cl3.club_name AS club3_name,
-        cl3.description AS club3_description,
-        cl3.category AS club3_category
-
+        cm.role AS club_role,
+        cl.club_name,
+        cl.description AS club_description,
+        cl.category AS club_category
     FROM clients c
-    LEFT JOIN clubs cl1 ON c.club1_id = cl1.club_id
-    LEFT JOIN clubs cl2 ON c.club2_id = cl2.club_id
-    LEFT JOIN clubs cl3 ON c.club3_id = cl3.club_id
+    LEFT JOIN club_members cm ON c.client_id = cm.client_id
+    LEFT JOIN clubs cl ON cm.club_id = cl.club_id
     WHERE c.mail = ?;
   `;
 
@@ -119,7 +101,23 @@ app.get("/profile/:email", async (req, res) => {
       return res.status(404).json({ message: "Profile not found" });
     }
 
-    res.json(rows[0]); // ✅ send profile data
+    // ✅ Group client info + clubs
+    const clientInfo = {
+      full_name: rows[0].full_name,
+      mail: rows[0].mail,
+      phone_number: rows[0].phone_number,
+      date_of_birth: rows[0].date_of_birth,
+      gender: rows[0].gender,
+      address: rows[0].address,
+      clubs: rows.map(r => ({
+        role: r.club_role,
+        name: r.club_name,
+        description: r.club_description,
+        category: r.club_category
+      })).filter(c => c.name) // remove nulls if no clubs
+    };
+
+    res.json(clientInfo);
   } catch (err) {
     console.error("Error fetching profile:", err);
     res.status(500).json({ message: "Server error" });
@@ -143,29 +141,13 @@ app.post("/profile", async (req, res) => {
         c.date_of_birth,
         c.gender,
         c.address,
-
-        -- Club 1
-        c.club1_role AS club1_role,
-        cl1.club_name AS club1_name,
-        cl1.description AS club1_description,
-        cl1.category AS club1_category,
-
-        -- Club 2
-        c.club2_role AS club2_role,
-        cl2.club_name AS club2_name,
-        cl2.description AS club2_description,
-        cl2.category AS club2_category,
-
-        -- Club 3
-        c.club3_role AS club3_role,
-        cl3.club_name AS club3_name,
-        cl3.description AS club3_description,
-        cl3.category AS club3_category
-
+        cm.role AS club_role,
+        cl.club_name,
+        cl.description AS club_description,
+        cl.category AS club_category
     FROM clients c
-    LEFT JOIN clubs cl1 ON c.club1_id = cl1.club_id
-    LEFT JOIN clubs cl2 ON c.club2_id = cl2.club_id
-    LEFT JOIN clubs cl3 ON c.club3_id = cl3.club_id
+    LEFT JOIN club_members cm ON c.client_id = cm.client_id
+    LEFT JOIN clubs cl ON cm.club_id = cl.club_id
     WHERE c.mail = ?;
   `;
 
@@ -176,13 +158,78 @@ app.post("/profile", async (req, res) => {
       return res.status(404).json({ message: "Profile not found" });
     }
 
-    res.json(rows[0]); // ✅ send profile data
+    const clientInfo = {
+      full_name: rows[0].full_name,
+      mail: rows[0].mail,
+      phone_number: rows[0].phone_number,
+      date_of_birth: rows[0].date_of_birth,
+      gender: rows[0].gender,
+      address: rows[0].address,
+      clubs: rows
+        .map(r => ({
+          role: r.club_role,
+          name: r.club_name,
+          description: r.club_description,
+          category: r.club_category
+        }))
+        .filter(c => c.name !== null) // only valid clubs
+    };
+
+    res.json(clientInfo);
   } catch (err) {
     console.error("Error fetching profile:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
 
+
+app.post("/clubs/join", async (req, res) => {
+  try {
+    const { userEmail, clubId } = req.body;
+
+    if (!userEmail || !clubId) {
+      return res.status(400).json({ message: "Email and clubId are required" });
+    }
+
+    // Get client_id
+    const [clientRows] = await dbase.query(
+      "SELECT client_id FROM clients WHERE mail = ?",
+      [userEmail]
+    );
+
+    if (clientRows.length === 0) {
+      return res.status(404).json({ message: "Client not found" });
+    }
+    const { client_id } = clientRows[0];
+
+    // Check if already a member
+    const [existing] = await dbase.query(
+      "SELECT * FROM club_members WHERE client_id = ? AND club_id = ?",
+      [client_id, clubId]
+    );
+
+    if (existing.length > 0) {
+      return res.status(400).json({ message: "Already a member of this club" });
+    }
+
+    // Insert membership
+    await dbase.query(
+      "INSERT INTO club_members (client_id, club_id, role) VALUES (?, ?, 'Member')",
+      [client_id, clubId]
+    );
+
+    // Update member count in clubs
+    await dbase.query(
+      "UPDATE clubs SET member_count = member_count + 1 WHERE club_id = ?",
+      [clubId]
+    );
+
+    res.status(201).json({ message: "Joined club successfully!" });
+  } catch (err) {
+    console.error("Error joining club:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 // CREATE CLUB HANDLER
 const handleCreateClub = async (req, res) => {
@@ -195,7 +242,7 @@ const handleCreateClub = async (req, res) => {
       clubEmail,
       clubSocialMedia,
       clubLogo,
-      userEmail // from frontend localStorage
+      userEmail // frontend localStorage
     } = req.body;
 
     // 1. Get login_id
@@ -209,9 +256,9 @@ const handleCreateClub = async (req, res) => {
     }
     const loginId = loginRows[0].id;
 
-    // 2. Get client info
+    // 2. Get client_id
     const [clientRows] = await dbase.query(
-      "SELECT client_id, club1_id, club2_id, club3_id FROM clients WHERE login_id = ?",
+      "SELECT client_id FROM clients WHERE login_id = ?",
       [loginId]
     );
 
@@ -219,16 +266,9 @@ const handleCreateClub = async (req, res) => {
       return res.status(400).json({ message: "Client not found" });
     }
 
-    const { client_id, club1_id, club2_id, club3_id } = clientRows[0];
+    const { client_id } = clientRows[0];
 
-    // 3. Check if already part of 3 clubs
-    if (club1_id && club2_id && club3_id) {
-      return res.status(403).json({
-        message: "Already part of 3 clubs, cannot create more."
-      });
-    }
-
-    // 4. Insert new club
+    // 3. Insert new club
     const [clubResult] = await dbase.query(
       `INSERT INTO clubs 
         (club_name, description, category, founded_date, club_head, email, contact_phone, social_media, website, logo_url, member_count, visibility, status, created_at, updated_at) 
@@ -246,19 +286,13 @@ const handleCreateClub = async (req, res) => {
 
     const newClubId = clubResult.insertId;
 
-    // 5. Update clients table → add new club in first empty slot with role Coordinator
-    let updateQuery = "";
-    if (!club1_id) {
-      updateQuery = "UPDATE clients SET club1_id = ?, club1_role = 'Coordinator' WHERE client_id = ?";
-    } else if (!club2_id) {
-      updateQuery = "UPDATE clients SET club2_id = ?, club2_role = 'Coordinator' WHERE client_id = ?";
-    } else if (!club3_id) {
-      updateQuery = "UPDATE clients SET club3_id = ?, club3_role = 'Coordinator' WHERE client_id = ?";
-    }
+    // 4. Insert into club_members with role = Coordinator
+    await dbase.query(
+      "INSERT INTO club_members (client_id, club_id, role) VALUES (?, ?, 'Coordinator')",
+      [client_id, newClubId]
+    );
 
-    await dbase.query(updateQuery, [newClubId, client_id]);
-
-    // 6. Success response
+    // 5. Success
     return res
       .status(201)
       .json({ message: "Club created successfully! You are the Coordinator." });

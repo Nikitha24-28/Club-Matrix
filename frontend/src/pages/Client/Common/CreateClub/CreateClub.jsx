@@ -23,6 +23,10 @@ const CreateClub = () => {
     try {
       const res = await axios.post("http://localhost:5000/create", formData);
       alert(res.data.message); // success or custom backend message
+
+      // ✅ Reset the form after successful submission
+      e.target.reset();
+
     } catch (err) {
       alert(err.response?.data?.message || "Error creating club");
     }

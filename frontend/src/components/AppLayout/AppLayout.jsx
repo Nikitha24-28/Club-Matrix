@@ -53,6 +53,7 @@ const AppLayout = () => {
                     <MyClubs/>
                   </ClientLayout>
                 } />
+                
                 <Route path="/CreateClubPage" element={
                   <ClientLayout userRole="general">
                     <CreateClub />
