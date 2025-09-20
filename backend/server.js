@@ -302,6 +302,72 @@ const handleCreateClub = async (req, res) => {
   }
 };
 
+// Route to get club details by ID
+app.get("/club/:clubId", async (req, res) => {
+  try {
+    const { clubId } = req.params;
+    const userEmail = req.query.email; // Get user email from query params
+
+    if (!clubId) {
+      return res.status(400).json({ message: "Club ID is required" });
+    }
+
+    // Get club details
+    const [clubRows] = await dbase.query(
+      `SELECT * FROM clubs WHERE club_id = ? OR club_name = ?`,
+      [clubId, clubId]
+    );
+
+    if (clubRows.length === 0) {
+      return res.status(404).json({ message: "Club not found" });
+    }
+
+    const club = clubRows[0];
+
+    // Get club members
+    const [memberRows] = await dbase.query(
+      `SELECT 
+        c.full_name,
+        c.mail,
+        c.phone_number,
+        cm.role,
+        cm.joined_date
+      FROM club_members cm
+      JOIN clients c ON cm.client_id = c.client_id
+      WHERE cm.club_id = ?`,
+      [club.club_id]
+    );
+
+    // Get user's role in this club if email is provided
+    let userRole = null;
+    if (userEmail) {
+      const [userRoleRows] = await dbase.query(
+        `SELECT cm.role 
+         FROM club_members cm
+         JOIN clients c ON cm.client_id = c.client_id
+         WHERE cm.club_id = ? AND c.mail = ?`,
+        [club.club_id, userEmail]
+      );
+      
+      if (userRoleRows.length > 0) {
+        userRole = userRoleRows[0].role;
+      }
+    }
+
+    const clubDetails = {
+      ...club,
+      members: memberRows,
+      userRole: userRole,
+      totalMembers: memberRows.length
+    };
+
+    res.json(clubDetails);
+  } catch (err) {
+    console.error("Error fetching club details:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // Routes
 app.post("/create", handleCreateClub);
 app.post("/api/clubs/create", handleCreateClub);
