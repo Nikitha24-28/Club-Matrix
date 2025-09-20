@@ -7,22 +7,23 @@ const Profile = () => {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if sidebar is collapsed
+  // Sidebar watcher
   useEffect(() => {
     const checkSidebarState = () => {
       const sidebarSelectors = ['.sidebar', '.side-nav', '.navigation', '.nav-sidebar'];
       let sidebar = null;
-      
+
       for (const selector of sidebarSelectors) {
         sidebar = document.querySelector(selector);
         if (sidebar) break;
       }
-      
+
       if (sidebar) {
-        const isCollapsed = sidebar.classList.contains('collapsed') || 
-                           sidebar.classList.contains('closed') || 
-                           sidebar.classList.contains('hidden') ||
-                           window.getComputedStyle(sidebar).width === '0px';
+        const isCollapsed =
+          sidebar.classList.contains('collapsed') ||
+          sidebar.classList.contains('closed') ||
+          sidebar.classList.contains('hidden') ||
+          window.getComputedStyle(sidebar).width === '0px';
         setSidebarCollapsed(isCollapsed);
       }
     };
@@ -41,7 +42,7 @@ const Profile = () => {
     };
   }, []);
 
-  // ✅ Fetch profile data from backend
+  // ✅ Fetch profile data
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -55,39 +56,6 @@ const Profile = () => {
         const res = await axios.get(`http://localhost:5000/profile/${mail}`);
         const data = res.data;
 
-        // ✅ Normalize clubs into an array
-        const clubs = [];
-        if (data.club1_name) {
-          clubs.push({
-            id: 1,
-            name: data.club1_name,
-            role: data.club1_role,
-            description: data.club1_description,
-            category: data.club1_category,
-            logo: data.club1_logo || "https://via.placeholder.com/100", // optional if you want logos
-          });
-        }
-        if (data.club2_name) {
-          clubs.push({
-            id: 2,
-            name: data.club2_name,
-            role: data.club2_role,
-            description: data.club2_description,
-            category: data.club2_category,
-            logo: data.club2_logo || "https://via.placeholder.com/100",
-          });
-        }
-        if (data.club3_name) {
-          clubs.push({
-            id: 3,
-            name: data.club3_name,
-            role: data.club3_role,
-            description: data.club3_description,
-            category: data.club3_category,
-            logo: data.club3_logo || "https://via.placeholder.com/100",
-          });
-        }
-
         setProfileData({
           fullName: data.full_name,
           phoneNumber: data.phone_number,
@@ -95,8 +63,16 @@ const Profile = () => {
           gender: data.gender,
           address: data.address,
           email: data.mail,
-          profileImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face", // placeholder, replace if you store profile pics
-          clubs,
+          profileImage:
+            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face", // placeholder
+          clubs: (data.clubs || []).map((club, index) => ({
+            id: index + 1,
+            name: club.name,
+            role: club.role,
+            description: club.description,
+            category: club.category,
+            logo: club.logo || "https://via.placeholder.com/100"
+          })),
         });
 
         setLoading(false);
@@ -217,7 +193,6 @@ const Profile = () => {
                     <span className="role-badge">{club.role}</span>
                   </div>
                   <div className="club-stats">
-                    {/* Optionally show stats if you extend DB */}
                     <span className="established-date">Club</span>
                   </div>
                 </div>

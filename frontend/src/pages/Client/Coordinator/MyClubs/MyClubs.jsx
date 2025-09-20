@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./MyClubs.css";
 
@@ -6,8 +7,8 @@ const MyClubs = () => {
     const [myClubs, setMyClubs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
-    // replace with logged-in user's email (can be from auth context/localStorage)
     const email = localStorage.getItem("email"); 
 
     useEffect(() => {
@@ -16,43 +17,8 @@ const MyClubs = () => {
                 const res = await axios.get(`http://localhost:5000/profile/${email}`);
                 const data = res.data;
 
-                // Transform backend response into club objects
-                const clubs = [];
-
-                if (data.club1_name) {
-                    clubs.push({
-                        id: 1,
-                        name: data.club1_name,
-                        description: data.club1_description,
-                        category: data.club1_category,
-                        role: data.club1_role,
-                        status: "active" // you can extend schema later
-                    });
-                }
-
-                if (data.club2_name) {
-                    clubs.push({
-                        id: 2,
-                        name: data.club2_name,
-                        description: data.club2_description,
-                        category: data.club2_category,
-                        role: data.club2_role,
-                        status: "active"
-                    });
-                }
-
-                if (data.club3_name) {
-                    clubs.push({
-                        id: 3,
-                        name: data.club3_name,
-                        description: data.club3_description,
-                        category: data.club3_category,
-                        role: data.club3_role,
-                        status: "active"
-                    });
-                }
-
-                setMyClubs(clubs);
+                // ✅ backend already sends clubs array
+                setMyClubs(data.clubs || []);
             } catch (err) {
                 console.error("Error fetching clubs:", err);
                 setError("Failed to load clubs.");
@@ -64,8 +30,9 @@ const MyClubs = () => {
         fetchClubs();
     }, [email]);
 
-    const handleClubClick = (clubId) => {
-        console.log(`Clicked on club with ID: ${clubId}`);
+    const handleClubClick = (club) => {
+        // Navigate to ClubDashboard with club ID
+        navigate(`/ClubDashboard/${club.id || club.name}`);
     };
 
     const getRoleColor = (role) => {
@@ -75,6 +42,7 @@ const MyClubs = () => {
             case "vice president": return "#fd7e14";
             case "treasurer": return "#20c997";
             case "secretary": return "#6f42c1";
+            case "coordinator": return "#007bff";
             case "member": return "#6c757d";
             default: return "#6c757d";
         }
@@ -99,11 +67,11 @@ const MyClubs = () => {
 
                     {myClubs.length > 0 ? (
                         <div className="clubs-list">
-                            {myClubs.map((club) => (
+                            {myClubs.map((club, index) => (
                                 <div 
-                                    key={club.id} 
+                                    key={index} 
                                     className="club-item"
-                                    onClick={() => handleClubClick(club.id)}
+                                    onClick={() => handleClubClick(club)}
                                 >
                                     <div className="club-main-info">
                                         <div className="club-header">
@@ -121,7 +89,7 @@ const MyClubs = () => {
                                         </div>
                                     </div>
                                     <div className="club-actions">
-                                        <div className={`status-indicator ${club.status}`}></div>
+                                        <div className={`status-indicator active`}></div>
                                         <span className="action-arrow">→</span>
                                     </div>
                                 </div>

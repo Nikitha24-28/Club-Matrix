@@ -3,54 +3,7 @@ import "./JoinRequests.css";
 
 const JoinRequests = () => {
     const [joinRequests, setJoinRequests] = useState([
-        {
-            id: 1,
-            clubName: "Photography Club",
-            clubDescription: "Capture moments and explore the art of photography",
-            clubCategory: "Arts & Media",
-            requestDate: "2024-01-15",
-            status: "approved"
-        },
-        {
-            id: 2,
-            clubName: "Coding Club",
-            clubDescription: "Learn programming and build amazing projects together",
-            clubCategory: "Technology",
-            requestDate: "2024-01-14",
-            status: "pending"
-        },
-        {
-            id: 3,
-            clubName: "Music Society",
-            clubDescription: "Share your love for music and perform together",
-            clubCategory: "Arts & Media",
-            requestDate: "2024-01-13",
-            status: "approved"
-        },
-        {
-            id: 4,
-            clubName: "Drama Club",
-            clubDescription: "Express yourself through theater and acting",
-            clubCategory: "Arts & Media",
-            requestDate: "2024-01-12",
-            status: "pending"
-        },
-        {
-            id: 5,
-            clubName: "Debate Society",
-            clubDescription: "Develop critical thinking and public speaking skills",
-            clubCategory: "Academic",
-            requestDate: "2024-01-11",
-            status: "approved"
-        },
-        {
-            id: 6,
-            clubName: "Art Club",
-            clubDescription: "Create, inspire, and explore various art forms",
-            clubCategory: "Arts & Media",
-            requestDate: "2024-01-10",
-            status: "pending"
-        }
+        //all join requests here     
     ]);
 
     // Show all requests (both pending and approved)
@@ -74,7 +27,8 @@ const JoinRequests = () => {
                     
                     {allRequests.length === 0 ? (
                         <div className="no-requests">
-                            <p>No join requests at the moment.</p>
+                            <p>You haven’t requested to join any club yet.</p>
+                            <p>Start sending requests and grow your connections </p>
                         </div>
                     ) : (
                         <div className="requests-list">
