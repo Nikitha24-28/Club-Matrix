@@ -10,17 +10,8 @@ import {
   Upload,
   Eye,
   Plus,
-  TrendingUp,
-  Award,
   Clock,
-  CheckCircle,
-  AlertCircle,
-  UserPlus,
-  Settings,
-  BarChart3,
-  Activity,
-  Star,
-  MessageSquare
+  UserPlus
 } from 'lucide-react';
 import './ClubDashboard.css';
 
@@ -47,12 +38,11 @@ const ClubDashboard = () => {
       try {
         setLoading(true);
         setError(null);
-        
+
         const userEmail = localStorage.getItem('email');
         const response = await axios.get(`http://localhost:5000/club/${clubId}?email=${userEmail}`);
-        
         const data = response.data;
-        
+
         // Set club information
         setClubInfo({
           id: data.club_id,
@@ -62,7 +52,7 @@ const ClubDashboard = () => {
           memberCount: data.member_count,
           foundedDate: data.founded_date,
           clubHead: data.club_head,
-          email: data.email,
+          email: data.club_email,   // ✅ backend returns `club_email`
           socialMedia: data.social_media,
           website: data.website,
           logoUrl: data.logo_url,
@@ -72,12 +62,14 @@ const ClubDashboard = () => {
 
         // Set user role
         setRole(data.userRole || 'member');
+        console.log("Fetched role:", data.userRole);
 
-        // Set members
+
+        // Set members from backend
         setMembers(data.members || []);
 
-        // Set mock announcements (since no announcements table exists)
-        setAnnouncements([
+        // Announcements (use backend if available, else mock)
+        setAnnouncements(data.announcements || [
           {
             id: 1,
             title: "Welcome to " + data.club_name,
@@ -85,63 +77,37 @@ const ClubDashboard = () => {
             author: data.club_head || "Club Head",
             date: new Date().toISOString().split('T')[0],
             priority: "high"
-          },
-          {
-            id: 2,
-            title: "Club Meeting Schedule",
-            content: "Our regular club meetings are held every Friday at 3 PM.",
-            author: data.club_head || "Club Head",
-            date: new Date(Date.now() - 86400000).toISOString().split('T')[0], // Yesterday
-            priority: "medium"
           }
         ]);
 
-        // Set mock events (since no events table exists)
-        setEvents([
+        // Events (use backend if available, else mock)
+        setEvents(data.events || [
           {
             id: 1,
             title: "Club Introduction Session",
-            date: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0], // Next week
+            date: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
             time: "2:00 PM",
             location: "Main Hall",
-            attendees: data.totalMembers || 0,
-            status: "upcoming"
-          },
-          {
-            id: 2,
-            title: "Monthly Club Gathering",
-            date: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0], // Next month
-            time: "10:00 AM",
-            location: "Club Room",
-            attendees: data.totalMembers || 0,
+            attendees: data.member_count || 0,
             status: "upcoming"
           }
         ]);
 
-        // Set mock targets for now (you can create a targets table later)
-        setTargets([
+        // Targets (use backend if available, else mock)
+        setTargets(data.targets || [
           {
             id: 1,
             title: "Member Growth",
-            current: data.totalMembers || 0,
-            target: Math.max((data.totalMembers || 0) + 10, 20),
+            current: data.member_count || 0,
+            target: Math.max((data.member_count || 0) + 10, 20),
             unit: "members",
-            deadline: "2024-12-31",
-            status: "on-track"
-          },
-          {
-            id: 2,
-            title: "Club Activities",
-            current: 2, // Mock events count
-            target: 12,
-            unit: "activities",
-            deadline: "2024-12-31",
+            deadline: "2025-12-31",
             status: "on-track"
           }
         ]);
 
-        // Set mock MoM files for now (you can create a files table later)
-        setMomFiles([
+        // MoM files (use backend if available, else mock)
+        setMomFiles(data.momFiles || [
           {
             id: 1,
             name: "Meeting Minutes - Recent",
@@ -186,7 +152,7 @@ const ClubDashboard = () => {
         name: file.name,
         date: new Date().toISOString().split('T')[0],
         size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
-        type: file.type.split('/')[1].toUpperCase()
+        type: file.type.split('/')[1]?.toUpperCase() || "FILE"
       };
       setMomFiles([newFile, ...momFiles]);
     }
@@ -258,7 +224,7 @@ const ClubDashboard = () => {
           <p className="header-subtitle">Manage your club activities and stay updated</p>
         </div>
         <div className="role-badge">
-          {role === 'coordinator' ? 'Coordinator' : 'Member'}
+          {role === 'Coordinator' ? 'Coordinator' : 'Member'}
         </div>
       </div>
 
@@ -315,15 +281,15 @@ const ClubDashboard = () => {
                 <Megaphone className="section-icon" />
                 Announcements
               </h3>
-              {role === 'coordinator' && (
+              {role === 'Coordinator' && (
                 <button className="add-btn">
                   <Plus className="icon-sm" />
                   Make Announcement
                 </button>
               )}
             </div>
-            
-            {role === 'coordinator' && (
+
+            {role === 'Coordinator' && (
               <div className="announcement-form">
                 <form onSubmit={handleAnnouncementSubmit}>
                   <div className="form-group">
@@ -331,7 +297,7 @@ const ClubDashboard = () => {
                       type="text"
                       placeholder="Announcement Title"
                       value={newAnnouncement.title}
-                      onChange={(e) => setNewAnnouncement({...newAnnouncement, title: e.target.value})}
+                      onChange={(e) => setNewAnnouncement({ ...newAnnouncement, title: e.target.value })}
                       required
                     />
                   </div>
@@ -339,7 +305,7 @@ const ClubDashboard = () => {
                     <textarea
                       placeholder="Announcement Content"
                       value={newAnnouncement.content}
-                      onChange={(e) => setNewAnnouncement({...newAnnouncement, content: e.target.value})}
+                      onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
                       rows="3"
                       required
                     />
@@ -347,7 +313,7 @@ const ClubDashboard = () => {
                   <div className="form-group">
                     <select
                       value={newAnnouncement.priority}
-                      onChange={(e) => setNewAnnouncement({...newAnnouncement, priority: e.target.value})}
+                      onChange={(e) => setNewAnnouncement({ ...newAnnouncement, priority: e.target.value })}
                     >
                       <option value="low">Low Priority</option>
                       <option value="medium">Medium Priority</option>
@@ -364,7 +330,7 @@ const ClubDashboard = () => {
                 <div key={announcement.id} className="announcement-card">
                   <div className="announcement-header">
                     <h4>{announcement.title}</h4>
-                    <span 
+                    <span
                       className="priority-badge"
                       style={{ backgroundColor: getPriorityColor(announcement.priority) }}
                     >
@@ -388,7 +354,7 @@ const ClubDashboard = () => {
                 <FileText className="section-icon" />
                 Minutes of Meetings (MoMs)
               </h3>
-              {role === 'coordinator' && (
+              {role === 'Coordinator' && (
                 <label className="upload-btn">
                   <Upload className="icon-sm" />
                   Upload MoM
@@ -401,7 +367,7 @@ const ClubDashboard = () => {
                 </label>
               )}
             </div>
-            
+
             <div className="mom-files">
               {momFiles.map((file) => (
                 <div key={file.id} className="file-card">
@@ -435,20 +401,20 @@ const ClubDashboard = () => {
                 <Calendar className="section-icon" />
                 Events
               </h3>
-              {role === 'coordinator' && (
+              {role === 'Coordinator' && (
                 <button className="add-btn">
                   <Plus className="icon-sm" />
                   Create Event
                 </button>
               )}
             </div>
-            
+
             <div className="events-list">
               {events.map((event) => (
                 <div key={event.id} className="event-card">
                   <div className="event-header">
                     <h4>{event.title}</h4>
-                    <span 
+                    <span
                       className="status-badge"
                       style={{ backgroundColor: getStatusColor(event.status) }}
                     >
@@ -480,20 +446,20 @@ const ClubDashboard = () => {
                 <Target className="section-icon" />
                 Club Targets
               </h3>
-              {role === 'coordinator' && (
+              {role === 'Coordinator' && (
                 <button className="add-btn">
                   <Plus className="icon-sm" />
                   Set Target
                 </button>
               )}
             </div>
-            
+
             <div className="targets-list">
               {targets.map((target) => (
                 <div key={target.id} className="target-card">
                   <div className="target-header">
                     <h4>{target.title}</h4>
-                    <span 
+                    <span
                       className="status-badge"
                       style={{ backgroundColor: getStatusColor(target.status) }}
                     >
@@ -501,9 +467,9 @@ const ClubDashboard = () => {
                     </span>
                   </div>
                   <div className="progress-bar">
-                    <div 
+                    <div
                       className="progress-fill"
-                      style={{ 
+                      style={{
                         width: `${(target.current / target.target) * 100}%`,
                         backgroundColor: target.current >= target.target ? '#22c55e' : '#3b82f6'
                       }}
@@ -529,14 +495,14 @@ const ClubDashboard = () => {
                 <Users className="section-icon" />
                 Club Members
               </h3>
-              {role === 'coordinator' && (
+              {role === 'Coordinator' && (
                 <button className="add-btn">
                   <UserPlus className="icon-sm" />
                   Add Member
                 </button>
               )}
             </div>
-            
+
             <div className="members-list">
               {members.length > 0 ? (
                 members.map((member, index) => (
@@ -547,10 +513,10 @@ const ClubDashboard = () => {
                     <div className="member-info">
                       <h4>{member.full_name}</h4>
                       <p className="member-role">{member.role}</p>
-                      <p className="member-email">{member.mail}</p>
+                      <p className="member-email">{member.email}</p> {/* ✅ backend returns `email` */}
                       <p className="member-join-date">Joined: {member.joined_date ? new Date(member.joined_date).toLocaleDateString() : 'N/A'}</p>
                     </div>
-                    <span 
+                    <span
                       className="status-badge"
                       style={{ backgroundColor: getStatusColor('active') }}
                     >
@@ -570,4 +536,3 @@ const ClubDashboard = () => {
 };
 
 export default ClubDashboard;
-
