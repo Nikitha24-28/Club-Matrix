@@ -302,21 +302,27 @@ const handleCreateClub = async (req, res) => {
   }
 };
 
-// Route to get club details by ID
 app.get("/club/:clubId", async (req, res) => {
   try {
     const { clubId } = req.params;
-    const userEmail = req.query.email; // Get user email from query params
+    const userEmail = req.query.email;
 
     if (!clubId) {
       return res.status(400).json({ message: "Club ID is required" });
     }
 
-    // Get club details
-    const [clubRows] = await dbase.query(
-      `SELECT * FROM clubs WHERE club_id = ? OR club_name = ?`,
-      [clubId, clubId]
-    );
+    let clubRows;
+    if (!isNaN(clubId)) {
+      [clubRows] = await dbase.query(
+        `SELECT * FROM clubs WHERE club_id = ?`,
+        [clubId]
+      );
+    } else {
+      [clubRows] = await dbase.query(
+        `SELECT * FROM clubs WHERE club_name = ?`,
+        [decodeURIComponent(clubId)]
+      );
+    }
 
     if (clubRows.length === 0) {
       return res.status(404).json({ message: "Club not found" });
@@ -324,21 +330,21 @@ app.get("/club/:clubId", async (req, res) => {
 
     const club = clubRows[0];
 
-    // Get club members
+    // Get members
     const [memberRows] = await dbase.query(
       `SELECT 
         c.full_name,
         c.mail,
         c.phone_number,
         cm.role,
-        cm.joined_date
+        cm.joined_at AS joined_date
       FROM club_members cm
       JOIN clients c ON cm.client_id = c.client_id
       WHERE cm.club_id = ?`,
       [club.club_id]
     );
 
-    // Get user's role in this club if email is provided
+    // Get user's role
     let userRole = null;
     if (userEmail) {
       const [userRoleRows] = await dbase.query(
@@ -348,20 +354,17 @@ app.get("/club/:clubId", async (req, res) => {
          WHERE cm.club_id = ? AND c.mail = ?`,
         [club.club_id, userEmail]
       );
-      
       if (userRoleRows.length > 0) {
         userRole = userRoleRows[0].role;
       }
     }
 
-    const clubDetails = {
+    res.json({
       ...club,
       members: memberRows,
-      userRole: userRole,
+      userRole,
       totalMembers: memberRows.length
-    };
-
-    res.json(clubDetails);
+    });
   } catch (err) {
     console.error("Error fetching club details:", err);
     res.status(500).json({ message: "Server error" });
