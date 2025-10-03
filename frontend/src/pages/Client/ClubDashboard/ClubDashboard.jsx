@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
   Users,
@@ -17,6 +17,7 @@ import './ClubDashboard.css';
 
 const ClubDashboard = () => {
   const { clubId } = useParams();
+  const navigate = useNavigate();
   const [clubInfo, setClubInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,6 +34,15 @@ const ClubDashboard = () => {
   const [members, setMembers] = useState([]);
 
   // Fetch club information based on clubId
+
+  useEffect(() => {
+    if (clubId) localStorage.setItem("ClubId", clubId);
+  
+    return () => {
+      localStorage.removeItem("ClubId");
+    };
+  }, [clubId]);
+  
   useEffect(() => {
     const fetchClubInfo = async () => {
       try {
@@ -59,6 +69,8 @@ const ClubDashboard = () => {
           visibility: data.visibility,
           status: data.status
         });
+
+        
 
         // Set user role
         setRole(data.userRole || 'member');
@@ -354,18 +366,27 @@ const ClubDashboard = () => {
                 <FileText className="section-icon" />
                 Minutes of Meetings (MoMs)
               </h3>
-              {role === 'Coordinator' && (
-                <label className="upload-btn">
-                  <Upload className="icon-sm" />
-                  Upload MoM
-                  <input
-                    type="file"
-                    accept=".pdf,.doc,.docx"
-                    onChange={handleFileUpload}
-                    style={{ display: 'none' }}
-                  />
-                </label>
-              )}
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  className="add-btn"
+                  onClick={() => navigate(`/ClubDashboard/${clubId}/mom`)}
+                >
+                  <Eye className="icon-sm" />
+                  View All MoMs
+                </button>
+                {role === 'Coordinator' && (
+                  <label className="upload-btn">
+                    <Upload className="icon-sm" />
+                    Upload MoM
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={handleFileUpload}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                )}
+              </div>
             </div>
 
             <div className="mom-files">

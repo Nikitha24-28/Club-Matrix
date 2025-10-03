@@ -11,6 +11,7 @@ import Nav from '../../pages/Client/Nav/Nav';
 import MyClubs from '../../pages/Client/Coordinator/MyClubs/MyClubs';
 import ClientLayout from '../../pages/Client/Nav/ClientLayout';
 import ClubDashboard from '../../pages/Client/ClubDashboard/ClubDashboard';
+import MoM from '../../pages/Client/Coordinator/MoM/MoM';
 
 const AppLayout = () => {
   const role = localStorage.getItem("role");
@@ -57,6 +58,11 @@ const AppLayout = () => {
                 <Route path="/ClubDashboard/:clubId" element={
                   <ClientLayout userRole="general">
                     <ClubDashboard />
+                  </ClientLayout>
+                } />
+                <Route path="/ClubDashboard/:clubId/mom" element={
+                  <ClientLayout userRole="general">
+                    <MoM />
                   </ClientLayout>
                 } />
                 
