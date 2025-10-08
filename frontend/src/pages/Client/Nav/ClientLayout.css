@@ -6,7 +6,8 @@
 
 .client-content {
   flex: 1;
-  margin-left: 150px; /* Further reduced to completely eliminate gap */
+  /* Match .sidebar-nav width: 20% with min 250px and max 300px */
+  margin-left: clamp(250px, 20vw, 300px);
   min-width: 0; /* Prevents flex item from overflowing */
   background-color: #f8fafc;
   overflow-y: auto;

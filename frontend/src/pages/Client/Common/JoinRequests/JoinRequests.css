@@ -80,6 +80,8 @@
   padding-bottom: 1rem;
 }
 
+/* cleaned toolbar styles removed */
+
 /* Requests List */
 .requests-list {
   display: flex;

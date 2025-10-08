@@ -568,6 +568,117 @@
   line-height: 1.5;
 }
 
+/* New: MoM Row/Card styles to match JSX structure */
+.mom-row {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mom-row:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.mom-row-header {
+  padding: 1rem 1.25rem;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.mom-row-title {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.mom-row-date {
+  color: #6c757d;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.mom-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toggle-btn {
+  background-color: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+  background-color: #e9ecef;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
+  transform: translateY(-1px);
+}
+
+.mom-row-body {
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.detail-item {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 0.75rem;
+  color: #495057;
+}
+
+/* Loading and Error states */
+.loading-state,
+.error-state {
+  background-color: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  max-width: 640px;
+  margin: 3rem auto;
+  text-align: center;
+}
+
+.error-state h2 {
+  color: #dc3545;
+}
+
+.loading-state h2 {
+  color: #2c3e50;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .mom-container {
@@ -654,3 +765,23 @@
     padding: 1rem;
   }
 } 
+
+/* Responsive adjustments for MoM rows */
+@media (max-width: 992px) {
+  .detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .mom-row-header {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+  }
+  .mom-row-actions {
+    flex-wrap: wrap;
+  }
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+}

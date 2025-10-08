@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./CommunityPage.css";
 import {
   Users, Calendar, Settings, TrendingUp, Plus,
-  Search, Bell, Filter, Star, Clock, ChevronRight, Loader2
+  Search, Bell, Filter, Star, Clock, ChevronRight, Loader2, X
 } from "lucide-react";
 import ClientLayout from "../../Nav/ClientLayout";
 
@@ -14,6 +14,11 @@ const CommunityPage = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedClub, setSelectedClub] = useState(null);
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+  const [joinReason, setJoinReason] = useState("");
+  const [joiningClubId, setJoiningClubId] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch public clubs from backend
   useEffect(() => {
@@ -48,7 +53,7 @@ const CommunityPage = () => {
     // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(club =>
-        club.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        club.club_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         club.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         club.category?.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -84,16 +89,40 @@ const CommunityPage = () => {
 
   // Handle join club
   const handleJoinClub = (clubId) => {
-    // TODO: Implement join club functionality
-    console.log('Joining club:', clubId);
-    alert('Join functionality will be implemented soon!');
+    setJoiningClubId(clubId);
+    setJoinReason("");
+    setIsJoinModalOpen(true);
   };
 
   // Handle view details
-  const handleViewDetails = (clubId) => {
-    // TODO: Implement view details functionality
-    console.log('Viewing details for club:', clubId);
-    alert('View details functionality will be implemented soon!');
+  const handleViewDetails = (club) => {
+    setSelectedClub(club);
+  };
+
+  const closeModal = () => {
+    setSelectedClub(null);
+  };
+
+  const closeJoinModal = () => {
+    setIsJoinModalOpen(false);
+    setJoinReason("");
+    setJoiningClubId(null);
+  };
+
+  const submitJoinRequest = async () => {
+    if (!joinReason.trim()) {
+      alert('Please provide a reason.');
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      // TODO: Wire to backend endpoint here
+      console.log('Submitting join request for club:', joiningClubId, 'reason:', joinReason);
+      alert('Request submitted!');
+      closeJoinModal();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -183,7 +212,7 @@ const CommunityPage = () => {
                 {/* Club Cards Section */}
                 <div className="clubs-section">
                   {filteredClubs.map((club, index) => (
-                    <div key={club.id || index} className={`club-card ${getCategoryColor(club.category)}`}>
+                    <div key={club.club_id || club.id || index} className={`club-card ${getCategoryColor(club.category)}`}>
                       <div className="club-header">
                         <div className="club-icon">
                           <Users className="users-icon" size={24} />
@@ -207,96 +236,79 @@ const CommunityPage = () => {
                       <div className="club-actions">
                         <button 
                           className="view-details-btn"
-                          onClick={() => handleViewDetails(club.id)}
+                          onClick={() => handleViewDetails(club)}
                         >
                           View Details
                         </button>
-                        <button 
-                          className="join-btn"
-                          onClick={() => handleJoinClub(club.id)}
-                        >
-                          Join
-                        </button>
+                        {null}
                       </div>
                     </div>
                   ))}
                 </div>
 
-                {/* Overview Section */}
-                <div className="overview-card">
-                  <div className="overview-header">
-                    <h3>Overview</h3>
-                  </div>
-
-                  <div className="overview-content">
-                    {/* Quick Stats */}
-                    <div className="quick-stats">
-                      <h4>Quick Stats</h4>
-                      <div className="stats-grid">
-                        <div className="stat-card blue">
-                          <p className="stat-number">{clubs.length}</p>
-                          <p>Public Clubs</p>
-                        </div>
-                        <div className="stat-card purple">
-                          <p className="stat-number">{categories.length - 1}</p>
-                          <p>Categories</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Categories */}
-                    <div className="categories-section">
-                      <h4>Categories</h4>
-                      <div className="categories-list">
-                        {categories.slice(1).map((category, index) => (
-                          <div 
-                            key={category} 
-                            className={`category-item ${selectedCategory === category ? 'active' : ''}`}
-                            onClick={() => setSelectedCategory(category)}
-                          >
-                            <div className={`category-dot ${getCategoryColor(category)}`}></div>
-                            <span>{category}</span>
-                            <span className="category-count">
-                              {clubs.filter(club => club.category === category).length}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Recent Activity */}
-                    <div className="recent-activity">
-                      <h4>Recent Activity</h4>
-                      <div className="activity-list">
-                        <div className="activity-item">
-                          <div className="activity-dot"></div>
-                          <div className="activity-info">
-                            <p>New clubs added</p>
-                            <p className="activity-time">
-                              <Clock size={12} />
-                              Recently
-                            </p>
-                          </div>
-                        </div>
-                        <div className="activity-item">
-                          <div className="activity-dot"></div>
-                          <div className="activity-info">
-                            <p>Community growing</p>
-                            <p className="activity-time">
-                              <Clock size={12} />
-                              This week
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                {null}
               </>
             )}
           </main>
         </div>
       </div>
+      {/* Club Details Modal */}
+      {selectedClub && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-modal" onClick={closeModal}>
+              <X size={20} />
+            </button>
+            <div className="modal-header">
+              <h2>{selectedClub.club_name}</h2>
+              <p className="modal-category">{selectedClub.category}</p>
+            </div>
+            <div className="modal-body">
+              <p>{selectedClub.description}</p>
+              <div className="modal-details">
+                <p><strong>Email:</strong> {selectedClub.email}</p>
+                <p><strong>Social Media:</strong> {selectedClub.social_media || "N/A"}</p>
+                <p><strong>Website:</strong> {selectedClub.website || "N/A"}</p>
+                <p><strong>Members:</strong> {selectedClub.member_count || selectedClub.members || 0}</p>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="join-btn" onClick={() => handleJoinClub(selectedClub.club_id || selectedClub.id)}>
+                Join Club
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Join Reason Modal */}
+      {isJoinModalOpen && (
+        <div className="modal-overlay" onClick={closeJoinModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-modal" onClick={closeJoinModal}>
+              <X size={20} />
+            </button>
+            <div className="modal-header">
+              <h2>Join Request</h2>
+              <p className="modal-category">Why are you willing to join this club?</p>
+            </div>
+            <div className="modal-body">
+              <textarea
+                className="reason-textarea"
+                rows="5"
+                placeholder="Share your motivation, relevant experience, or interests..."
+                value={joinReason}
+                onChange={(e) => setJoinReason(e.target.value)}
+              />
+            </div>
+            <div className="modal-footer modal-actions">
+              <button className="cancel-btn" onClick={closeJoinModal} disabled={isSubmitting}>Cancel</button>
+              <button className="join-btn" onClick={submitJoinRequest} disabled={isSubmitting}>
+                {isSubmitting ? 'Submitting...' : 'Submit Request'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </ClientLayout>
   );
 };

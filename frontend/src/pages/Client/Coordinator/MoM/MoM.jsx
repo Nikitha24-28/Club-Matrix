@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import './MoM.css';
 
-const MoM = ({ clubId = 1 }) => {
-  const API_BASE_URL = 'http://localhost:5000/api'; // Adjust to your backend URL
+const MoM = () => {
+  // Get clubId from URL params OR localStorage as fallback
+  const { clubId: urlClubId } = useParams();
+  const [clubId, setClubId] = useState(urlClubId || localStorage.getItem("ClubId"));
+  const [isResolvingClubId, setIsResolvingClubId] = useState(false);
+  const [userRole, setUserRole] = useState(null); // ✅ Track user role
+  
+  const API_BASE_URL = 'http://localhost:5000/api';
   
   const [momList, setMomList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,25 +39,109 @@ const MoM = ({ clubId = 1 }) => {
     file: null
   });
 
-  // Fetch MoMs from backend
+  // ✅ First useEffect: Resolve club_id if it's a club name
   useEffect(() => {
-    console.log('ClubId from props:', clubId);
-    console.log('Fetching from URL:', `${API_BASE_URL}/moms/${clubId}`);
+    const resolveClubId = async () => {
+      const currentClubId = urlClubId || localStorage.getItem("ClubId");
+      console.log('Initial clubId:', currentClubId);
+      
+      // Check if clubId is numeric
+      if (currentClubId && !isNaN(currentClubId)) {
+        console.log('✅ ClubId is already numeric:', currentClubId);
+        setClubId(currentClubId);
+        return;
+      }
+      
+      // If it's not numeric, fetch the numeric ID using club name
+      if (currentClubId) {
+        console.log('🔄 ClubId is a name, fetching numeric ID for:', currentClubId);
+        setIsResolvingClubId(true);
+        
+        try {
+          const response = await fetch(`http://localhost:5000/api/club/id/${encodeURIComponent(currentClubId)}`);
+          if (!response.ok) {
+            throw new Error('Failed to resolve club ID');
+          }
+          
+          const data = await response.json();
+          console.log('✅ Resolved club_id:', data.club_id);
+          setClubId(data.club_id);
+          localStorage.setItem("ClubId", data.club_id); // Store numeric ID
+        } catch (err) {
+          console.error('❌ Error resolving club ID:', err);
+          setError('Could not resolve club ID. Please navigate from club dashboard.');
+        } finally {
+          setIsResolvingClubId(false);
+        }
+      }
+    };
+    
+    resolveClubId();
+  }, [urlClubId]);
+
+  // ✅ Second useEffect: Fetch MoMs once we have numeric clubId
+  useEffect(() => {
+    if (!clubId || isResolvingClubId) {
+      return;
+    }
+    
+    // Ensure clubId is numeric before fetching
+    if (isNaN(clubId)) {
+      console.error('❌ ClubId is still not numeric:', clubId);
+      setError('Invalid club ID format');
+      setLoading(false);
+      return;
+    }
+    
+    console.log('📍 Fetching MoMs for numeric club_id:', clubId);
     fetchMoMs();
-  }, [clubId]);
+    fetchUserRole(); // ✅ Fetch user role
+  }, [clubId, isResolvingClubId]);
+
+  // ✅ Function to fetch user's role in this club
+  const fetchUserRole = async () => {
+    try {
+      const userEmail = localStorage.getItem('email');
+      if (!userEmail) {
+        console.log('No user email found');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5000/club/${clubId}?email=${userEmail}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch user role');
+      }
+
+      const data = await response.json();
+      console.log('User role:', data.userRole);
+      setUserRole(data.userRole);
+    } catch (err) {
+      console.error('Error fetching user role:', err);
+      // Don't set error, just continue without role (treat as member)
+      setUserRole('Member');
+    }
+  };
 
   const fetchMoMs = async () => {
     try {
       setLoading(true);
       setError(null);
+      
+      console.log('Making fetch request to:', `${API_BASE_URL}/moms/${clubId}`);
       const response = await fetch(`${API_BASE_URL}/moms/${clubId}`);
       
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch MoMs');
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`Failed to fetch MoMs: ${response.status} ${response.statusText}`);
       }
       
       const data = await response.json();
-      console.log('Raw data from backend:', data); // Debug log
+      console.log('Raw data from backend:', data);
+      console.log('Number of MoMs received:', data.length);
       
       // Parse JSON fields if they're stored as strings
       const parsedData = data.map(mom => {
@@ -88,7 +179,7 @@ const MoM = ({ clubId = 1 }) => {
         };
       });
       
-      console.log('Parsed data:', parsedData); // Debug log
+      console.log('Parsed data:', parsedData);
       setMomList(parsedData);
     } catch (err) {
       console.error('Error fetching MoMs:', err);
@@ -100,11 +191,6 @@ const MoM = ({ clubId = 1 }) => {
 
   const handleInputChange = (field, value) => {
     setNewMoM(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setNewMoM(prev => ({ ...prev, file }));
   };
 
   const handleAddMoM = async () => {
@@ -140,6 +226,8 @@ const MoM = ({ clubId = 1 }) => {
         notes: newMoM.notes || null
       };
 
+      console.log('Sending MoM data:', momData);
+
       const response = await fetch(`${API_BASE_URL}/moms/add`, {
         method: 'POST',
         headers: {
@@ -149,10 +237,13 @@ const MoM = ({ clubId = 1 }) => {
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error adding MoM:', errorText);
         throw new Error('Failed to add MoM');
       }
 
       const result = await response.json();
+      console.log('MoM added successfully:', result);
       alert('MoM added successfully!');
       
       // Refresh the list
@@ -250,10 +341,14 @@ const MoM = ({ clubId = 1 }) => {
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  if (loading) {
+  if (loading || isResolvingClubId) {
     return (
       <div className="mom-container">
-        <div className="loading-state">Loading MoMs...</div>
+        <div className="loading-state">
+          <h2>Loading MoMs...</h2>
+          <p>Club ID: {clubId || 'Resolving...'}</p>
+          <p>{isResolvingClubId ? 'Resolving club ID...' : 'Fetching MoMs...'}</p>
+        </div>
       </div>
     );
   }
@@ -262,8 +357,19 @@ const MoM = ({ clubId = 1 }) => {
     return (
       <div className="mom-container">
         <div className="error-state">
-          <p>Error: {error}</p>
-          <button onClick={fetchMoMs}>Retry</button>
+          <h2>Error Loading MoMs</h2>
+          <p><strong>Error:</strong> {error}</p>
+          <p><strong>Club ID:</strong> {clubId || 'Not found'}</p>
+          <p><strong>API URL:</strong> {API_BASE_URL}/moms/{clubId}</p>
+          <button onClick={fetchMoMs} style={{
+            padding: '10px 20px',
+            marginTop: '20px',
+            backgroundColor: '#007bff',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}>Retry</button>
         </div>
       </div>
     );
@@ -279,14 +385,18 @@ const MoM = ({ clubId = 1 }) => {
               <div className="header-taglines">
                 <span className="tagline">✅ Add your MoM</span>
                 <span className="tagline">📅 Keep track of your meetings</span>
+                <span className="tagline">🆔 Club ID: {clubId}</span>
+                {userRole && <span className="tagline">👤 Role: {userRole}</span>}
               </div>
             </div>
-            <button
-              className="add-mom-btn"
-              onClick={() => setShowAddModal(true)}
-            >
-              ➕ Add MoM
-            </button>
+            {userRole === 'Coordinator' && (
+              <button
+                className="add-mom-btn"
+                onClick={() => setShowAddModal(true)}
+              >
+                ➕ Add MoM
+              </button>
+            )}
           </div>
         </div>
 
@@ -324,7 +434,8 @@ const MoM = ({ clubId = 1 }) => {
         <div className="mom-list">
           {filteredAndSortedMoMs.length === 0 ? (
             <div className="no-mom">
-              <p>No MoMs found. Create your first MoM!</p>
+              <p>No MoMs found for this club. Create your first MoM!</p>
+              <p>Club ID: {clubId}</p>
             </div>
           ) : (
             filteredAndSortedMoMs.map((mom) => (
@@ -346,12 +457,14 @@ const MoM = ({ clubId = 1 }) => {
                     >
                       📥 Download
                     </button>
-                    <button
-                      className="delete-btn"
-                      onClick={() => handleDeleteMoM(mom.mom_id)}
-                    >
-                      🗑️ Delete
-                    </button>
+                    {userRole === 'Coordinator' && (
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDeleteMoM(mom.mom_id)}
+                      >
+                        🗑️ Delete
+                      </button>
+                    )}
                     <button
                       className="toggle-btn"
                       onClick={() => toggleExpanded(mom.mom_id)}
@@ -397,12 +510,22 @@ const MoM = ({ clubId = 1 }) => {
                       <div className="detail-section">
                         <h4>Action Items</h4>
                         <ul>
-                          {mom.action_items.map((item, index) => (
-                            <li key={index}>{item}</li>
-                          ))}
+                          {mom.action_items.map((item, index) =>
+                            typeof item === 'object' ? (
+                              <li key={index}>
+                                <div><strong>Task:</strong> {item.task}</div>
+                                <div><strong>Responsible:</strong> {item.responsible_email}</div>
+                                <div><strong>Due Date:</strong> {item.due_date}</div>
+                                <div><strong>Status:</strong> {item.status}</div>
+                              </li>
+                            ) : (
+                              <li key={index}>{item}</li>
+                            )
+                          )}
                         </ul>
                       </div>
                     )}
+                    
                     {mom.notes && (
                       <div className="detail-section">
                         <h4>Notes</h4>
@@ -444,7 +567,7 @@ const MoM = ({ clubId = 1 }) => {
               <div className="form-group">
                 <label>Club ID</label>
                 <input
-                  type="number"
+                  type="text"
                   value={clubId}
                   readOnly
                   className="form-input"
@@ -580,15 +703,6 @@ const MoM = ({ clubId = 1 }) => {
                 />
               </div>
 
-              <div className="form-group">
-                <label>Upload File (Optional)</label>
-                <input
-                  type="file"
-                  onChange={handleFileChange}
-                  accept=".pdf,.docx,.txt"
-                  className="form-file"
-                />
-              </div>
             </div>
 
             <div className="modal-footer">
@@ -682,7 +796,9 @@ const MoM = ({ clubId = 1 }) => {
                     <h3>Action Items</h3>
                     <ul>
                       {selectedMoM.action_items.map((item, index) => (
-                        <li key={index}>{item}</li>
+                        <li key={index}>
+                          {typeof item === 'string' ? item : (item.task || JSON.stringify(item))}
+                        </li>
                       ))}
                     </ul>
                   </div>

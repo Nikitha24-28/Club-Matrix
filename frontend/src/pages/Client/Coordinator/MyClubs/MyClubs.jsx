@@ -14,10 +14,24 @@ const MyClubs = () => {
     useEffect(() => {
         const fetchClubs = async () => {
             try {
-                const res = await axios.get(`http://localhost:5000/profile/${email}`);
+                // Add cache-busting timestamp to force fresh data
+                const res = await axios.get(`http://localhost:5000/profile/${email}?t=${Date.now()}`);
                 const data = res.data;
 
-                // ✅ backend already sends clubs array
+                console.log("Full response from backend:", data);
+                console.log("Clubs data from backend:", data.clubs);
+                
+                // Log each club to see if it has id/club_id
+                data.clubs?.forEach((club, index) => {
+                    console.log(`Club ${index}:`, {
+                        id: club.id,
+                        club_id: club.club_id,
+                        name: club.name,
+                        fullObject: club
+                    });
+                });
+
+                // ✅ backend now sends clubs with 'id' field
                 setMyClubs(data.clubs || []);
             } catch (err) {
                 console.error("Error fetching clubs:", err);
@@ -30,9 +44,28 @@ const MyClubs = () => {
         fetchClubs();
     }, [email]);
 
-    const handleClubClick = (club) => {
-        // Navigate to ClubDashboard with club ID
-        navigate(`/ClubDashboard/${club.id || club.name}`);
+    const handleClubClick = async (club) => {
+        console.log("Clicking club:", club);
+        
+        try {
+            // ✅ Fetch the numeric club_id using club name
+            const response = await axios.get(`http://localhost:5000/api/club/id/${encodeURIComponent(club.name)}`);
+            const { club_id } = response.data;
+            
+            console.log("✅ Fetched club_id:", club_id, "for club:", club.name);
+            
+            if (!club_id) {
+                console.error("No club ID received from backend");
+                alert("Error: Could not fetch club ID. Please try again.");
+                return;
+            }
+            
+            // Navigate to ClubDashboard with numeric club ID
+            navigate(`/ClubDashboard/${club_id}`);
+        } catch (error) {
+            console.error("Error fetching club ID:", error);
+            alert("Error: Could not load club. Please try again.");
+        }
     };
 
     const getRoleColor = (role) => {
@@ -69,13 +102,18 @@ const MyClubs = () => {
                         <div className="clubs-list">
                             {myClubs.map((club, index) => (
                                 <div 
-                                    key={index} 
+                                    key={club.id || club.club_id || index}
                                     className="club-item"
                                     onClick={() => handleClubClick(club)}
                                 >
                                     <div className="club-main-info">
                                         <div className="club-header">
-                                            <h3 className="club-name">{club.name}</h3>
+                                            <h3 className="club-name">
+                                                {club.name}
+                                                <span style={{ fontSize: '0.8em', color: '#666', marginLeft: '10px' }}>
+                                                    (ID: {club.id || club.club_id || 'N/A'})
+                                                </span>
+                                            </h3>
                                             <span 
                                                 className="role-badge"
                                                 style={{ backgroundColor: getRoleColor(club.role) }}

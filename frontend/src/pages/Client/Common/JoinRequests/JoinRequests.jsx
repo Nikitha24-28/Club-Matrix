@@ -14,21 +14,21 @@ const JoinRequests = () => {
             {/* Header Section - 25% of page */}
             <div className="myclubs-header">
                 <div className="header-content">
-                    <h1 className="main-title">Join Clubs</h1>
-                    <h2 className="subtitle">Be a part of something cool</h2>
-                    <p className="tagline">Connect with like-minded individuals and explore your passions together</p>
+                    <h1 className="main-title">Your Club Requests</h1>
+                    <h2 className="subtitle">Track your pending requests and membership status</h2>
+                    <p className="tagline">Stay updated as coordinators review your requests</p>
                 </div>
             </div>
 
             {/* Main Content Box - 75% of page */}
             <div className="myclubs-content">
                 <div className="content-box">
-                    <h3 className="content-heading">Join Requests</h3>
+                    <h3 className="content-heading">Pending Join requests</h3>
                     
                     {allRequests.length === 0 ? (
                         <div className="no-requests">
-                            <p>You haven’t requested to join any club yet.</p>
-                            <p>Start sending requests and grow your connections </p>
+                            <p>You have no pending join requests.</p>
+                            <p>Requests you submit will appear here until they are approved or rejected.</p>
                         </div>
                     ) : (
                         <div className="requests-list">
