@@ -109,21 +109,38 @@ const CommunityPage = () => {
     setJoiningClubId(null);
   };
 
+  
+
   const submitJoinRequest = async () => {
-    if (!joinReason.trim()) {
-      alert('Please provide a reason.');
-      return;
-    }
-    try {
-      setIsSubmitting(true);
-      // TODO: Wire to backend endpoint here
-      console.log('Submitting join request for club:', joiningClubId, 'reason:', joinReason);
-      alert('Request submitted!');
-      closeJoinModal();
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+      if (!joinReason.trim()) {
+        alert('Please provide a reason.');
+        return;
+      }
+      try {
+        setIsSubmitting(true);
+        // Assuming user email is managed via context, props, or localStorage, e.g.,
+        const userEmail = localStorage.getItem("email");
+        const response = await fetch('http://localhost:5000/clubs/request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userEmail: userEmail,
+            clubId: joiningClubId,
+            requestReason: joinReason
+          })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          alert(result.message || 'Failed to submit request');
+          return;
+        }
+        alert(result.message || 'Request submitted!');
+        closeJoinModal();
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+    
 
   if (loading) {
     return (

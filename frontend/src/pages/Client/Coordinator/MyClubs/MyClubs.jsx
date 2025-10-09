@@ -32,7 +32,12 @@ const MyClubs = () => {
                 });
 
                 // ✅ backend now sends clubs with 'id' field
-                setMyClubs(data.clubs || []);
+                // Filter out clubs where role is 'Request'
+                const filteredClubs = (data.clubs || []).filter(
+                    (club) => club.role && club.role.toLowerCase() !== "request"
+                );
+
+                setMyClubs(filteredClubs);
             } catch (err) {
                 console.error("Error fetching clubs:", err);
                 setError("Failed to load clubs.");

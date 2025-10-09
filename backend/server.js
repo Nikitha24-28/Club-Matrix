@@ -760,14 +760,151 @@ app.delete("/api/mom/:momId", async (req, res) => {
   }
 });
 
-// ======================== START SERVER ========================
+app.post("/clubs/request", async (req, res) => {
+  try {
+    const { userEmail, clubId, requestReason } = req.body;
+    if (!userEmail || !clubId || !requestReason) {
+      return res.status(400).json({ message: "Email, clubId, and reason required" });
+    }
+
+    const [clientRows] = await dbase.query(
+      "SELECT client_id FROM clients WHERE mail = ?",
+      [userEmail]
+    );
+    if (clientRows.length === 0) {
+      return res.status(404).json({ message: "Client not found" });
+    }
+    const { client_id } = clientRows[0];
+
+    // Check for existing membership or request
+    const [existing] = await dbase.query(
+      "SELECT * FROM club_members WHERE client_id = ? AND club_id = ?",
+      [client_id, clubId]
+    );
+    if (existing.length > 0) {
+      if (existing[0].role === "Request") {
+        return res.status(400).json({ message: "Already requested to join this club" });
+      }
+      return res.status(400).json({ message: "Already a member of this club" });
+    }
+
+    await dbase.query(
+      "INSERT INTO club_members (client_id, club_id, role, request_reason) VALUES (?, ?, 'Request', ?)",
+      [client_id, clubId, requestReason]
+    );
+    res.status(201).json({ message: "Join request submitted!" });
+  } catch (err) {
+    console.error("Error submitting join request:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// GET JOIN REQUESTS FOR A USER (using query param for email)
+app.get("/clubs/requests", async (req, res) => {
+  const userEmail = req.query.email;
+  if (!userEmail) {
+    return res.status(400).json({ message: "Email query parameter is required" });
+  }
+
+  try {
+    // Get client_id from email
+    const [clientRows] = await dbase.query(
+      "SELECT client_id FROM clients WHERE mail = ?",
+      [userEmail]
+    );
+    if (clientRows.length === 0) {
+      return res.status(404).json({ message: "Client not found" });
+    }
+    const { client_id } = clientRows[0];
+
+    // Query join requests and memberships
+    const [requests] = await dbase.query(`
+      SELECT 
+        cm.club_id, 
+        cm.role, 
+        cm.request_reason, 
+        cm.joined_at AS requestDate,
+        cl.club_name AS clubName, 
+        cl.description AS clubDescription, 
+        cl.category AS clubCategory
+      FROM club_members cm
+      JOIN clubs cl ON cm.club_id = cl.club_id
+      WHERE cm.client_id = ? AND (
+        cm.role = 'Request'
+      )
+    `, [client_id]);
+
+    res.status(200).json(requests);
+  } catch (err) {
+    console.error("Error fetching join requests:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// GET join requests for a specific club
+app.get('/api/club/:clubId/join-requests', async (req, res) => {
+  const { clubId } = req.params;
+  
+  try {
+    const query = `
+      SELECT 
+        cm.client_id,
+        cm.request_reason,
+        cm.joined_at,
+        c.full_name,
+        c.mail
+      FROM club_members cm
+      JOIN clients c ON cm.client_id = c.client_id
+      WHERE cm.club_id = ? AND cm.role = 'Request'
+      ORDER BY cm.joined_at DESC
+    `;
+    
+    const [results] = await dbase.query(query, [clubId]);
+    res.json(results);
+  } catch (error) {
+    console.error('Error fetching join requests:', error);
+    res.status(500).json({ error: 'Failed to fetch join requests' });
+  }
+});
+
+// Accept join request
+app.post('/api/club/:clubId/join-requests/:clientId/accept', async (req, res) => {
+  const { clubId, clientId } = req.params;
+  
+  try {
+    const query = `
+      UPDATE club_members 
+      SET role = 'Member', request_reason = NULL
+      WHERE club_id = ? AND client_id = ? AND role = 'Request'
+    `;
+    
+    await dbase.query(query, [clubId, clientId]);
+    res.json({ message: 'Request accepted successfully' });
+  } catch (error) {
+    console.error('Error accepting request:', error);
+    res.status(500).json({ error: 'Failed to accept request' });
+  }
+});
+
+// Reject join request
+app.delete('/api/club/:clubId/join-requests/:clientId/reject', async (req, res) => {
+  const { clubId, clientId } = req.params;
+  
+  try {
+    const query = `
+      DELETE FROM club_members 
+      WHERE club_id = ? AND client_id = ? AND role = 'Request'
+    `;
+    
+    await dbase.query(query, [clubId, clientId]);
+    res.json({ message: 'Request rejected successfully' });
+  } catch (error) {
+    console.error('Error rejecting request:', error);
+    res.status(500).json({ error: 'Failed to reject request' });
+  }
+});
+
+// Start server
 app.listen(PORT, () => {
-    console.log(`🚀 Server is running on port ${PORT}`);
-    console.log(`📍 Available routes:`);
-    console.log(`   - GET  /api/club/:clubId/announcements`);
-    console.log(`   - GET  /api/club/:clubId/events`);
-    console.log(`   - GET  /api/club/:clubId/targets`);
-    console.log(`   - POST /api/club/:clubId/announcements`);
-    console.log(`   - POST /api/club/:clubId/events`);
-    console.log(`   - POST /api/club/:clubId/targets`);
+  console.log(`🚀 Server is running on port ${PORT}`);
 });

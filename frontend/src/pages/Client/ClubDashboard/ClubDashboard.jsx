@@ -128,9 +128,9 @@ const ClubDashboard = () => {
           description: item.description,
           date: item.start_date,
           endDate: item.end_date,
-          time: '2:00 PM', // You can add time field to database if needed
-          location: 'TBA', // You can add location field to database if needed
-          attendees: 0, // You can track attendees separately if needed
+          time: '2:00 PM',
+          location: 'TBA',
+          attendees: 0,
           status: item.status,
           priority: item.priority
         }));
@@ -152,15 +152,13 @@ const ClubDashboard = () => {
       try {
         const response = await axios.get(`http://localhost:5000/api/club/${clubId}/targets`);
         const dbTargets = response.data.map(item => {
-          // Parse the description to extract current and target values
-          // Example: "Each member should complete 5 coding projects"
           const match = item.description.match(/(\d+)/g);
           const targetValue = match ? parseInt(match[match.length - 1]) : 100;
           
           return {
             id: item.item_id,
             title: item.title,
-            current: 0, // You can track progress separately
+            current: 0,
             target: targetValue,
             unit: 'units',
             deadline: item.end_date,
@@ -190,7 +188,7 @@ const ClubDashboard = () => {
           id: mom.mom_id,
           name: mom.meeting_title,
           date: new Date(mom.meeting_date).toISOString().split('T')[0],
-          size: '2.3 MB', // File size tracking can be added if needed
+          size: '2.3 MB',
           type: 'MoM'
         }));
         setMomFiles(dbMoms);
@@ -205,6 +203,30 @@ const ClubDashboard = () => {
     }
   }, [clubId]);
 
+  // Fetch join requests from database
+  useEffect(() => {
+    const fetchJoinRequests = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/club/${clubId}/join-requests`);
+        const dbRequests = response.data.map(req => ({
+          id: req.client_id,
+          name: req.full_name,
+          email: req.email,
+          message: req.request_reason || 'No message provided',
+          date: new Date(req.joined_at).toISOString().split('T')[0]
+        }));
+        setJoinRequests(dbRequests);
+        console.log('✅ Loaded join requests:', dbRequests.length);
+      } catch (error) {
+        console.error('Error fetching join requests:', error);
+      }
+    };
+
+    if (clubId && role === 'Coordinator') {
+      fetchJoinRequests();
+    }
+  }, [clubId, role]);
+
   const handleAnnouncementSubmit = async (e) => {
     e.preventDefault();
     if (newAnnouncement.title && newAnnouncement.description) {
@@ -218,7 +240,6 @@ const ClubDashboard = () => {
           userEmail
         });
 
-        // Refresh announcements
         const response = await axios.get(`http://localhost:5000/api/club/${clubId}/announcements`);
         const dbAnnouncements = response.data.map(item => ({
           id: item.item_id,
@@ -281,12 +302,32 @@ const ClubDashboard = () => {
   const toggleAnnouncementForm = () => setShowAnnouncementForm((prev) => !prev);
   const toggleMoms = () => setExpandMoms((prev) => !prev);
 
-  const handleAcceptRequest = (requestId) => {
-    setJoinRequests((prev) => prev.filter((r) => r.id !== requestId));
+  const handleAcceptRequest = async (requestId) => {
+    try {
+      await axios.post(`http://localhost:5000/api/club/${clubId}/join-requests/${requestId}/accept`);
+      setJoinRequests((prev) => prev.filter((r) => r.id !== requestId));
+      
+      const userEmail = localStorage.getItem('email');
+      const response = await axios.get(`http://localhost:5000/club/${clubId}?email=${userEmail}`);
+      setMembers(response.data.members || []);
+      setClubInfo(prev => ({ ...prev, memberCount: (prev.memberCount || 0) + 1 }));
+      
+      console.log('✅ Request accepted successfully');
+    } catch (error) {
+      console.error('Error accepting request:', error);
+      alert('Failed to accept request');
+    }
   };
 
-  const handleRejectRequest = (requestId) => {
-    setJoinRequests((prev) => prev.filter((r) => r.id !== requestId));
+  const handleRejectRequest = async (requestId) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/club/${clubId}/join-requests/${requestId}/reject`);
+      setJoinRequests((prev) => prev.filter((r) => r.id !== requestId));
+      console.log('✅ Request rejected successfully');
+    } catch (error) {
+      console.error('Error rejecting request:', error);
+      alert('Failed to reject request');
+    }
   };
 
   const handleTargetProgressChange = (targetId, newValue) => {
@@ -565,6 +606,7 @@ const ClubDashboard = () => {
                         <h4>{req.name}</h4>
                         <p className="request-email">{req.email}</p>
                         <p className="request-message">{req.message}</p>
+                        <p className="request-date">Requested on: {req.date}</p>
                       </div>
                     </div>
                     <div className="request-actions">
@@ -722,7 +764,6 @@ const ClubDashboard = () => {
                 Club Members
               </h3>
               <div className="section-actions">
-                <span className="members-count-badge">{members.length}</span>
                 <span className="collapse-toggle">
                   {showMembers ? <ChevronDown className="icon-sm" /> : <ChevronRight className="icon-sm" />}
                 </span>
@@ -737,31 +778,35 @@ const ClubDashboard = () => {
 
             {showMembers && (
             <div className="members-list">
-              {members.length > 0 ? (
-                members.map((member, index) => (
-                  <div key={index} className="member-card">
-                    <div className="member-avatar">
-                      <Users className="icon" />
+              {members.filter(member => member.role !== 'Request').length > 0 ? (
+                members
+                  .filter(member => member.role !== 'Request')
+                  .map((member, index) => (
+                    <div key={index} className="member-card">
+                      <div className="member-avatar">
+                        <Users className="icon" />
+                      </div>
+                      <div className="member-info">
+                        <h4>{member.full_name}</h4>
+                        <p className="member-role">{member.role}</p>
+                        <p className="member-email">{member.email}</p>
+                        <p className="member-join-date">
+                          Joined: {member.joined_date ? new Date(member.joined_date).toLocaleDateString() : 'N/A'}
+                        </p>
+                      </div>
+                      <span
+                        className="status-badge"
+                        style={{ backgroundColor: getStatusColor('active') }}
+                      >
+                        active
+                      </span>
                     </div>
-                    <div className="member-info">
-                      <h4>{member.full_name}</h4>
-                      <p className="member-role">{member.role}</p>
-                      <p className="member-email">{member.email}</p>
-                      <p className="member-join-date">Joined: {member.joined_date ? new Date(member.joined_date).toLocaleDateString() : 'N/A'}</p>
-                    </div>
-                    <span
-                      className="status-badge"
-                      style={{ backgroundColor: getStatusColor('active') }}
-                    >
-                      active
-                    </span>
-                  </div>
-                ))
+                  ))
               ) : (
                 <p>No members found</p>
               )}
             </div>
-            )}
+          )}
           </div>
         </div>
       </div>
