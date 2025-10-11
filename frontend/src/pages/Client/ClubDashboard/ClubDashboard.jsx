@@ -13,7 +13,8 @@ import {
   Clock,
   UserPlus,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  X
 } from 'lucide-react';
 import './ClubDashboard.css';
 
@@ -42,6 +43,25 @@ const ClubDashboard = () => {
   const [expandMoms, setExpandMoms] = useState(false);
   const [showJoinRequests, setShowJoinRequests] = useState(true);
   const [joinRequests, setJoinRequests] = useState([]);
+  
+  // Modal states
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [showTargetModal, setShowTargetModal] = useState(false);
+  const [newEvent, setNewEvent] = useState({
+    title: '',
+    description: '',
+    start_date: '',
+    end_date: '',
+    priority: 'medium',
+    visibility: 'club_members'
+  });
+  const [newTarget, setNewTarget] = useState({
+    title: '',
+    description: '',
+    end_date: '',
+    priority: 'urgent',
+    visibility: 'officers_only'
+  });
 
   useEffect(() => {
     if (clubId) localStorage.setItem("ClubId", clubId);
@@ -259,6 +279,102 @@ const ClubDashboard = () => {
         console.error('Error posting announcement:', error);
         alert('Failed to post announcement');
       }
+    }
+  };
+
+  const handleEventSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const userEmail = localStorage.getItem('email');
+      await axios.post(`http://localhost:5000/api/club/${clubId}/events`, {
+        title: newEvent.title,
+        description: newEvent.description,
+        start_date: newEvent.start_date,
+        end_date: newEvent.end_date || newEvent.start_date,
+        priority: newEvent.priority,
+        visibility: newEvent.visibility,
+        userEmail
+      });
+
+      // Refresh events
+      const response = await axios.get(`http://localhost:5000/api/club/${clubId}/events`);
+      const dbEvents = response.data.map(item => ({
+        id: item.item_id,
+        title: item.title,
+        description: item.description,
+        date: item.start_date,
+        endDate: item.end_date,
+        time: '2:00 PM',
+        location: 'TBA',
+        attendees: 0,
+        status: item.status,
+        priority: item.priority
+      }));
+      setEvents(dbEvents);
+
+      // Reset form and close modal
+      setNewEvent({
+        title: '',
+        description: '',
+        start_date: '',
+        end_date: '',
+        priority: 'medium',
+        visibility: 'club_members'
+      });
+      setShowEventModal(false);
+      alert('Event created successfully!');
+    } catch (error) {
+      console.error('Error creating event:', error);
+      alert('Failed to create event');
+    }
+  };
+
+  const handleTargetSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const userEmail = localStorage.getItem('email');
+      await axios.post(`http://localhost:5000/api/club/${clubId}/targets`, {
+        title: newTarget.title,
+        description: newTarget.description,
+        end_date: newTarget.end_date,
+        priority: newTarget.priority,
+        visibility: newTarget.visibility,
+        userEmail
+      });
+
+      // Refresh targets
+      const response = await axios.get(`http://localhost:5000/api/club/${clubId}/targets`);
+      const dbTargets = response.data.map(item => {
+        const match = item.description.match(/(\d+)/g);
+        const targetValue = match ? parseInt(match[match.length - 1]) : 100;
+        
+        return {
+          id: item.item_id,
+          title: item.title,
+          current: 0,
+          target: targetValue,
+          unit: 'units',
+          deadline: item.end_date,
+          status: item.status,
+          priority: item.priority,
+          description: item.description
+        };
+      });
+      setTargets(dbTargets);
+
+      // Reset form and close modal
+      setNewTarget({
+        title: '',
+        description: '',
+        end_date: '',
+        priority: 'urgent',
+        visibility: 'officers_only'
+      });
+      setShowTargetModal(false);
+      alert('Target created successfully!');
+    } catch (error) {
+      console.error('Error creating target:', error);
+      alert('Failed to create target');
     }
   };
 
@@ -638,7 +754,7 @@ const ClubDashboard = () => {
                   {expandEvents ? <ChevronDown className="icon-sm" /> : <ChevronRight className="icon-sm" />}
                 </span>
               {role === 'Coordinator' && (
-                <button className="add-btn">
+                <button className="add-btn" onClick={() => setShowEventModal(true)}>
                   <Plus className="icon-sm" />
                   Create Event
                 </button>
@@ -694,7 +810,7 @@ const ClubDashboard = () => {
                   {expandTargets ? <ChevronDown className="icon-sm" /> : <ChevronRight className="icon-sm" />}
                 </span>
                 {role === 'Coordinator' && (
-                  <button className="add-btn">
+                  <button className="add-btn" onClick={() => setShowTargetModal(true)}>
                     <Plus className="icon-sm" />
                     Set Target
                   </button>
@@ -718,15 +834,7 @@ const ClubDashboard = () => {
                   {target.description && (
                     <p className="target-description">{target.description}</p>
                   )}
-                  <div className="progress-bar">
-                    <div
-                      className="progress-fill"
-                      style={{
-                        width: `${(target.current / target.target) * 100}%`,
-                        backgroundColor: target.current >= target.target ? '#22c55e' : '#3b82f6'
-                      }}
-                    />
-                  </div>
+                  
                   {role === 'Coordinator' && (
                     <div className="target-control">
                       <input
@@ -739,11 +847,7 @@ const ClubDashboard = () => {
                       <span className="target-control-label">Update progress</span>
                     </div>
                   )}
-                  <div className="target-stats">
-                    <span className="current">{target.current}</span>
-                    <span className="separator">/</span>
-                    <span className="target">{target.target} {target.unit}</span>
-                  </div>
+                  
                   <div className="target-deadline">
                     Deadline: {new Date(target.deadline).toLocaleDateString()}
                   </div>
@@ -767,12 +871,6 @@ const ClubDashboard = () => {
                 <span className="collapse-toggle">
                   {showMembers ? <ChevronDown className="icon-sm" /> : <ChevronRight className="icon-sm" />}
                 </span>
-                {role === 'Coordinator' && (
-                  <button className="add-btn">
-                    <UserPlus className="icon-sm" />
-                    Add Member
-                  </button>
-                )}
               </div>
             </div>
 
@@ -810,6 +908,188 @@ const ClubDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Event Modal */}
+      {showEventModal && (
+        <div className="modal-overlay" onClick={() => setShowEventModal(false)}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>
+                <Calendar className="modal-icon" />
+                Create New Event
+              </h2>
+              <button className="modal-close" onClick={() => setShowEventModal(false)}>
+                <X className="icon-sm" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEventSubmit} className="modal-form">
+              <div className="form-group">
+                <label>Event Title *</label>
+                <input
+                  type="text"
+                  value={newEvent.title}
+                  onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                  placeholder="Enter event title"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  value={newEvent.description}
+                  onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+                  placeholder="Enter event description"
+                  rows="3"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Start Date *</label>
+                <input
+                  type="date"
+                  value={newEvent.start_date}
+                  onChange={(e) => setNewEvent({ ...newEvent, start_date: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>End Date</label>
+                <input
+                  type="date"
+                  value={newEvent.end_date}
+                  onChange={(e) => setNewEvent({ ...newEvent, end_date: e.target.value })}
+                  min={newEvent.start_date}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Priority</label>
+                <select
+                  value={newEvent.priority}
+                  onChange={(e) => setNewEvent({ ...newEvent, priority: e.target.value })}
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Visibility</label>
+                <select
+                  value={newEvent.visibility}
+                  onChange={(e) => setNewEvent({ ...newEvent, visibility: e.target.value })}
+                >
+                  <option value="public">Public</option>
+                  <option value="club_members">Club Members</option>
+                  <option value="officers_only">Officers Only</option>
+                </select>
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="btn-cancel" onClick={() => setShowEventModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn-submit">
+                  Create Event
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Target Modal */}
+      {showTargetModal && (
+        <div className="modal-overlay" onClick={() => setShowTargetModal(false)}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>
+                <Target className="modal-icon" />
+                Set New Target
+              </h2>
+              <button className="modal-close" onClick={() => setShowTargetModal(false)}>
+                <X className="icon-sm" />
+              </button>
+            </div>
+
+            <form onSubmit={handleTargetSubmit} className="modal-form">
+              <div className="form-group">
+                <label>Target Title *</label>
+                <input
+                  type="text"
+                  value={newTarget.title}
+                  onChange={(e) => setNewTarget({ ...newTarget, title: e.target.value })}
+                  placeholder="Enter target title"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Description *</label>
+                <textarea
+                  value={newTarget.description}
+                  onChange={(e) => setNewTarget({ ...newTarget, description: e.target.value })}
+                  placeholder="Enter target description (include target value)"
+                  rows="3"
+                  required
+                />
+                <p className="form-hint">
+                  Tip: Include numbers in your description (e.g., "Recruit 50 new members")
+                </p>
+              </div>
+
+              <div className="form-group">
+                <label>Deadline *</label>
+                <input
+                  type="date"
+                  value={newTarget.end_date}
+                  onChange={(e) => setNewTarget({ ...newTarget, end_date: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Priority</label>
+                <select
+                  value={newTarget.priority}
+                  onChange={(e) => setNewTarget({ ...newTarget, priority: e.target.value })}
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Visibility</label>
+                <select
+                  value={newTarget.visibility}
+                  onChange={(e) => setNewTarget({ ...newTarget, visibility: e.target.value })}
+                >
+                  <option value="public">Public</option>
+                  <option value="club_members">Club Members</option>
+                  <option value="officers_only">Officers Only</option>
+                </select>
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="btn-cancel" onClick={() => setShowTargetModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn-submit">
+                  Set Target
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
