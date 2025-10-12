@@ -172,34 +172,39 @@ const Profile = () => {
         </div>
 
         <div className="profile-section">
-          <h2 className="section-title">My Clubs</h2>
-          <div className="clubs-grid">
-            {profileData.clubs.map((club) => (
-              <div key={club.id} className="club-card">
-                <div className="club-header">
-                  <img 
-                    src={club.logo} 
-                    alt={club.name} 
-                    className="club-logo"
-                  />
-                  <div className="club-info">
-                    <h3 className="club-name">{club.name}</h3>
-                    <span className="club-category">{club.category}</span>
-                  </div>
-                </div>
-                <p className="club-description">{club.description}</p>
-                <div className="club-details">
-                  <div className="club-role">
-                    <span className="role-badge">{club.role}</span>
-                  </div>
-                  <div className="club-stats">
-                    <span className="established-date">Club</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+  <h2 className="section-title">My Clubs</h2>
+  {profileData.clubs.length === 0 ? (
+    <p className="no-clubs-message">Not a part of any club yet.</p>
+  ) : (
+    <div className="clubs-grid">
+      {profileData.clubs.map((club) => (
+        <div key={club.id} className="club-card">
+          <div className="club-header">
+            <img 
+              src={club.logo} 
+              alt={club.name} 
+              className="club-logo"
+            />
+            <div className="club-info">
+              <h3 className="club-name">{club.name}</h3>
+              <span className="club-category">{club.category}</span>
+            </div>
+          </div>
+          <p className="club-description">{club.description}</p>
+          <div className="club-details">
+            <div className="club-role">
+              <span className="role-badge">{club.role}</span>
+            </div>
+            <div className="club-stats">
+              <span className="established-date">Club</span>
+            </div>
           </div>
         </div>
+      ))}
+    </div>
+  )}
+</div>
+
       </div>
     </div>
   );

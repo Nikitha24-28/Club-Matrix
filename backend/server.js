@@ -52,6 +52,110 @@ app.post("/login", async (req, res) => {
   }
 });
 
+// ======================== SIGNUP ========================
+app.post("/signup", async (req, res) => {
+  console.log("📍 Signup route hit");
+  console.log("Request body:", req.body);
+  
+  let connection;
+  
+  try {
+    const {
+      fullName,
+      email,
+      password,
+      phone,
+      dateOfBirth,
+      gender,
+      address
+    } = req.body;
+
+    console.log("Signup attempt for:", email);
+
+    // Validate required fields
+    if (!fullName || !email || !password || !phone || !dateOfBirth || !gender || !address) {
+      console.log("❌ Missing required fields");
+      return res.status(400).json({ 
+        error: "All fields are required" 
+      });
+    }
+
+    // Get connection from pool
+    connection = await dbase.getConnection();
+    
+    // Start transaction
+    await connection.beginTransaction();
+    console.log("✅ Transaction started");
+
+    // Check if email already exists in login table
+    const [existingUser] = await connection.query(
+      "SELECT id FROM login WHERE email = ?",
+      [email]
+    );
+
+    if (existingUser.length > 0) {
+      console.log("❌ Email already exists:", email);
+      await connection.rollback();
+      connection.release();
+      return res.status(400).json({ 
+        error: "Email already registered" 
+      });
+    }
+
+    // Insert into login table
+    const [loginResult] = await connection.query(
+      "INSERT INTO login (email, password, role) VALUES (?, ?, 'CLIENT')",
+      [email, password]
+    );
+
+    const loginId = loginResult.insertId;
+    console.log("✅ Login entry created with ID:", loginId);
+
+    // Insert into clients table
+    const [clientResult] = await connection.query(
+      `INSERT INTO clients 
+        (login_id, full_name, mail, phone_number, date_of_birth, gender, address) 
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [loginId, fullName, email, phone, dateOfBirth, gender, address]
+    );
+
+    console.log("✅ Client entry created with ID:", clientResult.insertId);
+
+    // Commit transaction
+    await connection.commit();
+    console.log("✅ Transaction committed successfully");
+
+    res.status(201).json({ 
+      message: "Account created successfully",
+      email: email
+    });
+
+  } catch (err) {
+    console.error("❌ Signup error:", err);
+    
+    // Rollback transaction on error
+    if (connection) {
+      try {
+        await connection.rollback();
+        console.log("⚠️ Transaction rolled back");
+      } catch (rollbackErr) {
+        console.error("❌ Rollback error:", rollbackErr);
+      }
+    }
+    
+    res.status(500).json({ 
+      error: "Failed to create account. Please try again.",
+      details: err.message
+    });
+  } finally {
+    // Always release connection back to pool
+    if (connection) {
+      connection.release();
+      console.log("✅ Connection released");
+    }
+  }
+});
+
 // ======================== CLUBS ========================
 app.get("/clubs_fetch", async (req, res) => {
   try {
@@ -760,6 +864,7 @@ app.delete("/api/mom/:momId", async (req, res) => {
   }
 });
 
+
 app.post("/clubs/request", async (req, res) => {
   try {
     const { userEmail, clubId, requestReason } = req.body;
@@ -903,6 +1008,101 @@ app.delete('/api/club/:clubId/join-requests/:clientId/reject', async (req, res) 
     res.status(500).json({ error: 'Failed to reject request' });
   }
 });
+
+// ======================== ADD MEMBER TO CLUB (COORDINATOR ONLY) ========================
+app.post("/api/club/:clubId/add-member", async (req, res) => {
+  const { clubId } = req.params;
+  const { memberEmail, role } = req.body;
+  
+  console.log("📍 POST /api/club/:clubId/add-member - clubId:", clubId);
+  console.log("Request body:", { memberEmail, role });
+  
+  try {
+    // Validate inputs
+    if (!memberEmail || !role) {
+      return res.status(400).json({ 
+        message: "Email and role are required" 
+      });
+    }
+
+    // Validate role
+    const validRoles = ['Member', 'Coordinator'];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ 
+        message: "Invalid role. Must be 'Member' or 'Coordinator'" 
+      });
+    }
+
+    // Check if the email exists in clients table
+    const [clientRows] = await dbase.query(
+      "SELECT client_id, full_name FROM clients WHERE mail = ?",
+      [memberEmail]
+    );
+
+    if (clientRows.length === 0) {
+      return res.status(404).json({ 
+        message: "User with this email not found. They need to sign up first." 
+      });
+    }
+
+    const clientId = clientRows[0].client_id;
+    const fullName = clientRows[0].full_name;
+
+    // Check if already a member
+    const [existingMember] = await dbase.query(
+      "SELECT * FROM club_members WHERE client_id = ? AND club_id = ?",
+      [clientId, clubId]
+    );
+
+    if (existingMember.length > 0) {
+      // If they have a pending request, update it
+      if (existingMember[0].role === 'Request') {
+        await dbase.query(
+          "UPDATE club_members SET role = ?, request_reason = NULL WHERE client_id = ? AND club_id = ?",
+          [role, clientId, clubId]
+        );
+        
+        console.log(`✅ Updated pending request to ${role} for client_id: ${clientId}`);
+        return res.status(200).json({ 
+          message: `${fullName} has been added as ${role}`,
+          updated: true
+        });
+      }
+      
+      return res.status(400).json({ 
+        message: "This user is already a member of the club" 
+      });
+    }
+
+    // Add member to club
+    await dbase.query(
+      "INSERT INTO club_members (client_id, club_id, role) VALUES (?, ?, ?)",
+      [clientId, clubId, role]
+    );
+
+    // Update member count in clubs table
+    await dbase.query(
+      "UPDATE clubs SET member_count = member_count + 1 WHERE club_id = ?",
+      [clubId]
+    );
+
+    console.log(`✅ Member added successfully - client_id: ${clientId}, role: ${role}`);
+    
+    res.status(201).json({ 
+      message: `${fullName} has been added as ${role}`,
+      clientId: clientId,
+      fullName: fullName
+    });
+
+  } catch (err) {
+    console.error("❌ Error adding member:", err);
+    res.status(500).json({ 
+      message: "Server error", 
+      error: err.message 
+    });
+  }
+});
+
 
 // Start server
 app.listen(PORT, () => {

@@ -47,6 +47,7 @@ const ClubDashboard = () => {
   // Modal states
   const [showEventModal, setShowEventModal] = useState(false);
   const [showTargetModal, setShowTargetModal] = useState(false);
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: '',
     description: '',
@@ -61,6 +62,10 @@ const ClubDashboard = () => {
     end_date: '',
     priority: 'urgent',
     visibility: 'officers_only'
+  });
+  const [newMember, setNewMember] = useState({
+    email: '',
+    role: 'Member'
   });
 
   useEffect(() => {
@@ -231,7 +236,7 @@ const ClubDashboard = () => {
         const dbRequests = response.data.map(req => ({
           id: req.client_id,
           name: req.full_name,
-          email: req.email,
+          email: req.email || req.mail,
           message: req.request_reason || 'No message provided',
           date: new Date(req.joined_at).toISOString().split('T')[0]
         }));
@@ -296,7 +301,6 @@ const ClubDashboard = () => {
         userEmail
       });
 
-      // Refresh events
       const response = await axios.get(`http://localhost:5000/api/club/${clubId}/events`);
       const dbEvents = response.data.map(item => ({
         id: item.item_id,
@@ -312,7 +316,6 @@ const ClubDashboard = () => {
       }));
       setEvents(dbEvents);
 
-      // Reset form and close modal
       setNewEvent({
         title: '',
         description: '',
@@ -342,7 +345,6 @@ const ClubDashboard = () => {
         userEmail
       });
 
-      // Refresh targets
       const response = await axios.get(`http://localhost:5000/api/club/${clubId}/targets`);
       const dbTargets = response.data.map(item => {
         const match = item.description.match(/(\d+)/g);
@@ -362,7 +364,6 @@ const ClubDashboard = () => {
       });
       setTargets(dbTargets);
 
-      // Reset form and close modal
       setNewTarget({
         title: '',
         description: '',
@@ -375,6 +376,30 @@ const ClubDashboard = () => {
     } catch (error) {
       console.error('Error creating target:', error);
       alert('Failed to create target');
+    }
+  };
+
+  const handleAddMemberSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(`http://localhost:5000/api/club/${clubId}/add-member`, {
+        memberEmail: newMember.email,
+        role: newMember.role
+      });
+
+      alert(response.data.message);
+
+      const userEmail = localStorage.getItem('email');
+      const clubResponse = await axios.get(`http://localhost:5000/club/${clubId}?email=${userEmail}`);
+      setMembers(clubResponse.data.members || []);
+      setClubInfo(prev => ({ ...prev, memberCount: (prev.memberCount || 0) + 1 }));
+
+      setNewMember({ email: '', role: 'Member' });
+      setShowAddMemberModal(false);
+      console.log('✅ Member added successfully');
+    } catch (error) {
+      console.error('Error adding member:', error);
+      alert(error.response?.data?.message || 'Failed to add member');
     }
   };
 
@@ -503,7 +528,6 @@ const ClubDashboard = () => {
         </div>
       </div>
 
-      {/* Club Statistics */}
       <div className="stats-section">
         <h2>Club Statistics</h2>
         <div className="stats-grid">
@@ -547,9 +571,7 @@ const ClubDashboard = () => {
       </div>
 
       <div className="dashboard-content">
-        {/* Left Column */}
         <div className="left-column">
-          {/* Announcements Section */}
           <div className="section">
             <div
               className="section-header clickable"
@@ -646,7 +668,6 @@ const ClubDashboard = () => {
             )}
           </div>
 
-          {/* MoMs Section */}
           <div className="section">
             <div className="section-header clickable" onClick={toggleMoms} role="button" tabIndex={0} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleMoms()}>
               <h3>
@@ -689,7 +710,6 @@ const ClubDashboard = () => {
             )}
           </div>
 
-          {/* Join Requests - Coordinator only */}
           {role === 'Coordinator' && (
           <div className="section">
             <div
@@ -740,9 +760,7 @@ const ClubDashboard = () => {
           )}
         </div>
 
-        {/* Right Column */}
         <div className="right-column">
-          {/* Events Section */}
           <div className="section">
             <div className="section-header clickable" onClick={toggleEvents} role="button" tabIndex={0} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleEvents()}>
               <h3>
@@ -798,7 +816,6 @@ const ClubDashboard = () => {
             )}
           </div>
 
-          {/* Targets Section */}
           <div className="section">
             <div className="section-header clickable" onClick={toggleTargets} role="button" tabIndex={0} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleTargets()}>
               <h3>
@@ -860,7 +877,6 @@ const ClubDashboard = () => {
             )}
           </div>
 
-          {/* Members Section */}
           <div className="section">
             <div className="section-header clickable" onClick={toggleMemberDropdown} role="button" tabIndex={0} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleMemberDropdown()}>
               <h3>
@@ -871,6 +887,18 @@ const ClubDashboard = () => {
                 <span className="collapse-toggle">
                   {showMembers ? <ChevronDown className="icon-sm" /> : <ChevronRight className="icon-sm" />}
                 </span>
+                {role === 'Coordinator' && (
+                  <button 
+                    className="add-btn" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowAddMemberModal(true);
+                    }}
+                  >
+                    <Plus className="icon-sm" />
+                    Add Member
+                  </button>
+                )}
               </div>
             </div>
 
@@ -909,7 +937,6 @@ const ClubDashboard = () => {
         </div>
       </div>
 
-      {/* Event Modal */}
       {showEventModal && (
         <div className="modal-overlay" onClick={() => setShowEventModal(false)}>
           <div className="modal-container" onClick={(e) => e.stopPropagation()}>
@@ -1003,7 +1030,6 @@ const ClubDashboard = () => {
         </div>
       )}
 
-      {/* Target Modal */}
       {showTargetModal && (
         <div className="modal-overlay" onClick={() => setShowTargetModal(false)}>
           <div className="modal-container" onClick={(e) => e.stopPropagation()}>
@@ -1084,6 +1110,62 @@ const ClubDashboard = () => {
                 </button>
                 <button type="submit" className="btn-submit">
                   Set Target
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showAddMemberModal && (
+        <div className="modal-overlay" onClick={() => setShowAddMemberModal(false)}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>
+                <UserPlus className="modal-icon" />
+                Add New Member
+              </h2>
+              <button className="modal-close" onClick={() => setShowAddMemberModal(false)}>
+                <X className="icon-sm" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddMemberSubmit} className="modal-form">
+              <div className="form-group">
+                <label>Member Email *</label>
+                <input
+                  type="email"
+                  value={newMember.email}
+                  onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
+                  placeholder="Enter member's email address"
+                  required
+                />
+                <p className="form-hint">
+                  The user must be registered in the system
+                </p>
+              </div>
+
+              <div className="form-group">
+                <label>Role *</label>
+                <select
+                  value={newMember.role}
+                  onChange={(e) => setNewMember({ ...newMember, role: e.target.value })}
+                  required
+                >
+                  <option value="Member">Member</option>
+                  <option value="Coordinator">Coordinator</option>
+                </select>
+                <p className="form-hint">
+                  Coordinators have full management permissions
+                </p>
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="btn-cancel" onClick={() => setShowAddMemberModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn-submit">
+                  Add Member
                 </button>
               </div>
             </form>

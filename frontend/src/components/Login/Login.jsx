@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from "axios";
@@ -6,10 +7,22 @@ import "./Login.css";
 import communityHero from "./loginimage.webp";
 
 const Login = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Handle success message from signup
+  useEffect(() => {
+    if (location.state?.message) {
+      toast.success(location.state.message);
+      if (location.state.email) {
+        setEmail(location.state.email);
+      }
+    }
+  }, [location.state]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -113,9 +126,13 @@ const Login = () => {
               <div className="contact-admin">
                 <p className="contact-text">
                   Don't have an account?{" "}
-                  <a href="#" className="contact-link">
-                    Contact your administrator
-                  </a>
+                  <button 
+                    type="button"
+                    className="contact-link"
+                    onClick={() => navigate('/signup')}
+                  >
+                    Create Account
+                  </button>
                 </p>
               </div>
             </div>

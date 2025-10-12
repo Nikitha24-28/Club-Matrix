@@ -9,6 +9,10 @@ const PriorLogin = () => {
     const handleSignIn = () => {
         navigate('/login');
     };
+    
+    const handleGetStarted = () => {
+        navigate('/signup');
+    };
     useEffect(() => {
         try {
             localStorage.removeItem('role');
@@ -33,7 +37,7 @@ const PriorLogin = () => {
         
         <div className="navbar-actions">
           <button className="btn btn-ghost" onClick={handleSignIn}>Sign In</button>
-          <button className="btn btn-hero">Get Started</button>
+          <button className="btn btn-hero" onClick={handleGetStarted}>Get Started</button>
         </div>
       </nav>
 
@@ -51,7 +55,7 @@ const PriorLogin = () => {
                 and building stronger communities. Join thousands of successful clubs worldwide.
               </p>
               <div className="hero-actions">
-                <button className="btn btn-hero btn-lg">
+                <button className="btn btn-hero btn-lg" onClick={handleGetStarted}>
                   Start Building Your Club
                   <ArrowRight className="btn-icon" />
                 </button>
@@ -219,7 +223,7 @@ const PriorLogin = () => {
                 Start building stronger communities today.
               </p>
               <div className="cta-actions">
-                <button className="btn btn-cta-primary">
+                <button className="btn btn-cta-primary" onClick={handleGetStarted}>
                   Create Your Club Now
                   <ArrowRight className="btn-icon" />
                 </button>

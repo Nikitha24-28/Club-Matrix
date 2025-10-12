@@ -6,6 +6,7 @@ import AdminDashboard from "../../pages/Admin/Dashboard/AdminDashboard";
 import CreateClub from '../../pages/Client/Common/CreateClub/CreateClub';
 import JoinRequests from "../../pages/Client/Common/JoinRequests/JoinRequests"
 import PriorLogin from "../../pages/priorlogin/priorlogin"; 
+import Signup from "../../pages/priorlogin/Signup";
 import Profile from '../../pages/Client/Common/Profile/Profile'
 import Nav from '../../pages/Client/Nav/Nav';
 import MyClubs from '../../pages/Client/Coordinator/MyClubs/MyClubs';
@@ -22,6 +23,16 @@ const AppLayout = () => {
       <Routes>
         {/* Landing page (always public) */}
         <Route path="/" element={<PriorLogin />} />
+
+        {/* Signup page: always available; redirect if already logged in */}
+        <Route
+          path="/signup"
+          element={
+            role
+              ? (role === "ADMIN" ? <Navigate to="/AdminDashboard" /> : <Navigate to="/CommunityPage" />)
+              : <Signup />
+          }
+        />
 
         {/* Login page: always available; redirect if already logged in */}
         <Route
