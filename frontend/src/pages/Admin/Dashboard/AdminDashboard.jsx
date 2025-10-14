@@ -1,26 +1,23 @@
 import React, { useMemo } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
-  BarChart3,
-  Users,
   Calendar,
   Shield,
   Globe,
   Lock,
-  TrendingUp,
-  UserCheck,
-  UserX,
   CheckCircle,
   LogOut,
   Settings,
-  Bell,
   Search,
-  Menu,
-  LayoutDashboard,
-  FileBarChart2,
-  ClipboardList
+  LayoutDashboard
 } from 'lucide-react';
 import './AdminDashboard.css';
+import './AdminUI.css';
+import './AdminClientLayout.css';
+import AdminNav from './AdminNav';
+import AdminOverview from './AdminOverview';
+import AdminSettings from './AdminSettings';
+import AdminApprovals from './AdminApprovals';
 
 const CustomCard = ({ children, className = "" }) => (
   <div className={`custom-card ${className}`}>
@@ -61,14 +58,8 @@ const AdminSidebar = () => {
   };
   const sidebarItems = [
     { title: 'Overview', icon: LayoutDashboard, url: '/AdminDashboard' },
-    { title: 'Clubs', icon: Users, url: '/AdminDashboard/clubs' },
-    { title: 'Events', icon: Calendar, url: '/AdminDashboard/events' },
-    { title: 'Approve Clubs', icon: CheckCircle, url: '/AdminDashboard/approve' },
-    { title: 'Block Clubs', icon: UserX, url: '/AdminDashboard/block' },
-    { title: 'Unblock Clubs', icon: UserCheck, url: '/AdminDashboard/unblock' },
-    { title: 'Reports', icon: FileBarChart2, url: '/AdminDashboard/reports' },
-    { title: 'Settings', icon: Settings, url: '/AdminDashboard/settings' },
-    { title: 'Notifications', icon: Bell, url: '/AdminDashboard/notifications' }
+    { title: 'Approvals', icon: CheckCircle, url: '/AdminDashboard/approve' },
+    { title: 'Settings', icon: Settings, url: '/AdminDashboard/settings' }
   ];
 
   return (
@@ -105,7 +96,6 @@ const AdminSidebar = () => {
 
 const DashboardMetrics = () => {
   const metrics = [
-    { title: 'Clubs', value: '2,910', delta: '+2.1%', icon: Users },
     { title: 'Events', value: '16,004', delta: '+3.8%', icon: Calendar },
     { title: 'Public', value: '1,960', delta: '+1.9%', icon: Globe },
     { title: 'Private', value: '950', delta: '+0.8%', icon: Lock }
@@ -225,11 +215,7 @@ const QuickActions = () => (
     </CustomCardHeader>
     <CustomCardContent>
       <div className="actions-grid">
-        <NavLink to="/AdminDashboard/approve" className="action-btn"><CheckCircle className="icon-sm" /> Approve Clubs</NavLink>
-        <NavLink to="/AdminDashboard/block" className="action-btn"><UserX className="icon-sm" /> Block Clubs</NavLink>
-        <NavLink to="/AdminDashboard/unblock" className="action-btn"><UserCheck className="icon-sm" /> Unblock Clubs</NavLink>
-        <NavLink to="/AdminDashboard/events" className="action-btn"><Calendar className="icon-sm" /> Create Event</NavLink>
-        <NavLink to="/AdminDashboard/reports" className="action-btn"><FileBarChart2 className="icon-sm" /> View Reports</NavLink>
+        <NavLink to="/AdminDashboard/approve" className="action-btn"><CheckCircle className="icon-sm" /> Approvals</NavLink>
         <NavLink to="/AdminDashboard/settings" className="action-btn"><Settings className="icon-sm" /> Settings</NavLink>
       </div>
     </CustomCardContent>
@@ -290,114 +276,36 @@ const AdminDashboard = () => {
 
   const headerTitle = (
     section === '' ? 'Overview' :
-    section === 'approve' ? 'Approve Clubs' :
-    section === 'block' ? 'Block Clubs' :
-    section === 'unblock' ? 'Unblock Clubs' :
-    section === 'events' ? 'Events' :
-    section === 'users' ? 'User Management' :
-    section === 'reports' ? 'Reports' :
-    section === 'settings' ? 'Settings' :
-    section === 'notifications' ? 'Notifications' :
-    section === 'clubs' ? 'Clubs' : 'Overview'
+    section === 'approve' ? 'Approvals' :
+    section === 'settings' ? 'Settings' : 'Overview'
   );
 
   const renderContent = () => {
     if (section === '' || section === 'overview') {
       return (
         <>
-          <div className="intro">
-            <h2 className="intro-title">Club Matrix Admin</h2>
-            <p className="intro-subtitle">Manage and monitor club activities across the platform</p>
-          </div>
-
-          <DashboardMetrics />
-
-          <div className="grid-3">
-            <ClubGrowthChart />
+          <AdminOverview />
+          <div style={{ marginTop: '1rem' }}>
             <QuickActions />
-          </div>
-
-          <div className="grid-2">
-            <ActivityChart />
-            <CustomCard>
-              <CustomCardHeader>
-                <CustomCardTitle>Recent Activities</CustomCardTitle>
-                <CustomCardDescription>Latest club management actions</CustomCardDescription>
-              </CustomCardHeader>
-              <CustomCardContent>
-                <div className="recent-activities">
-                  {[
-                    { action: 'New club approved', club: 'Tech Innovators', time: '2 minutes ago' },
-                    { action: 'Club blocked', club: 'Spam Club 123', time: '15 minutes ago' },
-                    { action: 'Event created', club: 'Book Readers', time: '1 hour ago' },
-                    { action: 'Club unblocked', club: 'Photography Fans', time: '2 hours ago' },
-                    { action: 'New club pending', club: 'Gaming Masters', time: '3 hours ago' }
-                  ].map((activity, index) => (
-                    <div key={index} className="activity-item">
-                      <div className="activity-dot"></div>
-                      <div className="activity-text">
-                        <p className="activity-action">{activity.action}</p>
-                        <p className="activity-club">{activity.club}</p>
-                      </div>
-                      <p className="activity-time">{activity.time}</p>
-                    </div>
-                  ))}
-                </div>
-              </CustomCardContent>
-            </CustomCard>
           </div>
         </>
       );
     }
 
-    const Simple = ({ title }) => (
-      <CustomCard>
-        <CustomCardHeader>
-          <CustomCardTitle>{title}</CustomCardTitle>
-          <CustomCardDescription>Coming soon</CustomCardDescription>
-        </CustomCardHeader>
-        <CustomCardContent>
-          <p>Build out the {title.toLowerCase()} workflow here.</p>
-        </CustomCardContent>
-      </CustomCard>
-    );
+    if (section === 'approve') return <AdminApprovals />;
+    if (section === 'settings') return <AdminSettings />;
 
-    if (section === 'approve') return <Simple title="Approve Clubs" />;
-    if (section === 'block') return <Simple title="Block Clubs" />;
-    if (section === 'unblock') return <Simple title="Unblock Clubs" />;
-    if (section === 'events') return <Simple title="Events" />;
-    if (section === 'users') return <Simple title="User Management" />;
-    if (section === 'reports') return <Simple title="Reports" />;
-    if (section === 'settings') return <Simple title="Settings" />;
-    if (section === 'notifications') return <Simple title="Notifications" />;
-    if (section === 'clubs') return <Simple title="Clubs" />;
-
-    return <Simple title="Overview" />;
+    return null;
   };
 
   return (
-    <div className="dashboard-wrapper">
+    <div className="admin-client-layout">
       <AdminSidebar />
-
-      <div className="dashboard-content">
-        <header className="dashboard-header">
-          <div className="header-content">
-            <h1 className="header-title">{headerTitle}</h1>
-            <div className="header-right">
-              <div className="search-box">
-                <Search className="search-icon" />
-                <input className="search-input" placeholder="Search clubs..." />
-              </div>
-              <div className="profile-icon">
-                <Shield className="icon-sm text-primary" />
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <main className="main-content">
+      <div className="admin-client-content">
+        <AdminNav title={headerTitle} />
+        <div className="main-content">
           {renderContent()}
-        </main>
+        </div>
       </div>
     </div>
   );

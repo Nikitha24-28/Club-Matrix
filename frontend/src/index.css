@@ -6,9 +6,9 @@
 }
 
 html, body, #root {
-  height: 100% !important;
-  width: 100% !important;
-  overflow: hidden !important;
+  min-height: 100%;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -19,10 +19,9 @@ body {
 }
 
 #root {
-  display: flex !important;
-  flex-direction: column !important;
-  height: 100vh !important;
-  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 /* Force all main layout containers to respect viewport height */
