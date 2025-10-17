@@ -1103,6 +1103,221 @@ app.post("/api/club/:clubId/add-member", async (req, res) => {
   }
 });
 
+// Add these routes to your server.js file
+
+// ======================== ADMIN - GET ALL CLUBS ========================
+app.get("/api/admin/clubs", async (req, res) => {
+  try {
+    const [clubs] = await dbase.query(`
+      SELECT 
+        club_id,
+        club_name,
+        email,
+        visibility,
+        status,
+        block_status,
+        block_reason,
+        created_at,
+        updated_at
+      FROM clubs
+      ORDER BY created_at DESC
+    `);
+    
+    res.status(200).json(clubs);
+  } catch (err) {
+    console.error("Error fetching clubs:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+// ======================== ADMIN - BLOCK CLUB ========================
+app.post("/api/admin/clubs/:clubId/block", async (req, res) => {
+  const { clubId } = req.params;
+  const { blockReason } = req.body;
+  
+  console.log("📍 Blocking club_id:", clubId, "Reason:", blockReason);
+  
+  if (!blockReason || blockReason.trim() === '') {
+    return res.status(400).json({ message: "Block reason is required" });
+  }
+  
+  try {
+    const [result] = await dbase.query(
+      `UPDATE clubs 
+       SET block_status = 'Blocked', 
+           block_reason = ?, 
+           updated_at = NOW() 
+       WHERE club_id = ? AND block_status = 'Unblocked'`,
+      [blockReason.trim(), clubId]
+    );
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Club not found or already blocked" });
+    }
+    
+    console.log("✅ Club blocked successfully");
+    res.status(200).json({ 
+      message: "Club blocked successfully",
+      blockReason: blockReason.trim()
+    });
+  } catch (err) {
+    console.error("❌ Error blocking club:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+// ======================== ADMIN - UNBLOCK CLUB ========================
+app.post("/api/admin/clubs/:clubId/unblock", async (req, res) => {
+  const { clubId } = req.params;
+  
+  console.log("📍 Unblocking club_id:", clubId);
+  
+  try {
+    const [result] = await dbase.query(
+      `UPDATE clubs 
+       SET block_status = 'Unblocked', 
+           block_reason = NULL, 
+           updated_at = NOW() 
+       WHERE club_id = ? AND block_status = 'Blocked'`,
+      [clubId]
+    );
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Club not found or already unblocked" });
+    }
+    
+    console.log("✅ Club unblocked successfully");
+    res.status(200).json({ message: "Club unblocked successfully" });
+  } catch (err) {
+    console.error("❌ Error unblocking club:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+// ======================== COORDINATOR - REQUEST UNBLOCK ========================
+app.post("/api/clubs/:clubId/request-unblock", async (req, res) => {
+  const { clubId } = req.params;
+  const { unblockReason, userEmail } = req.body;
+  
+  console.log("📍 Unblock request for club_id:", clubId);
+  
+  if (!unblockReason || unblockReason.trim() === '') {
+    return res.status(400).json({ message: "Reason for unblocking is required" });
+  }
+  
+  try {
+    // Verify user is coordinator of this club
+    const [coordinatorCheck] = await dbase.query(
+      `SELECT cm.role 
+       FROM club_members cm
+       JOIN clients c ON cm.client_id = c.client_id
+       WHERE cm.club_id = ? AND c.mail = ? AND cm.role = 'Coordinator'`,
+      [clubId, userEmail]
+    );
+    
+    if (coordinatorCheck.length === 0) {
+      return res.status(403).json({ message: "Only coordinators can request unblock" });
+    }
+    
+    // Update block_reason with coordinator's request
+    const [result] = await dbase.query(
+      `UPDATE clubs 
+       SET block_reason = ?, 
+           updated_at = NOW() 
+       WHERE club_id = ? AND block_status = 'Blocked'`,
+      [`UNBLOCK_REQUEST: ${unblockReason.trim()}`, clubId]
+    );
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Club not found or not blocked" });
+    }
+    
+    console.log("✅ Unblock request submitted successfully");
+    res.status(200).json({ 
+      message: "Unblock request submitted successfully. Admin will review your request."
+    });
+  } catch (err) {
+    console.error("❌ Error submitting unblock request:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+// ======================== GET CLUB BLOCK STATUS ========================
+app.get("/api/clubs/:clubId/block-status", async (req, res) => {
+  const { clubId } = req.params;
+  
+  try {
+    const [rows] = await dbase.query(
+      `SELECT 
+        block_status, 
+        block_reason, 
+        updated_at,
+        DATEDIFF(NOW(), updated_at) as days_blocked
+       FROM clubs 
+       WHERE club_id = ?`,
+      [clubId]
+    );
+    
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Club not found" });
+    }
+    
+    const clubData = rows[0];
+    const daysRemaining = clubData.block_status === 'Blocked' 
+      ? Math.max(0, 30 - clubData.days_blocked)
+      : null;
+    
+    res.status(200).json({
+      blockStatus: clubData.block_status,
+      blockReason: clubData.block_reason,
+      daysBlocked: clubData.days_blocked,
+      daysRemaining: daysRemaining,
+      willBeDeleted: clubData.block_status === 'Blocked' && clubData.days_blocked >= 30
+    });
+  } catch (err) {
+    console.error("Error fetching block status:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+// ======================== CRON JOB - DELETE BLOCKED CLUBS AFTER 30 DAYS ========================
+// This should run daily - you can use node-cron package
+// npm install node-cron
+const cron = require('node-cron');
+
+// Run every day at midnight
+cron.schedule('0 0 * * *', async () => {
+  console.log('🔄 Running scheduled task: Delete clubs blocked for 30+ days');
+  
+  try {
+    const [clubsToDelete] = await dbase.query(`
+      SELECT club_id, club_name 
+      FROM clubs 
+      WHERE block_status = 'Blocked' 
+      AND DATEDIFF(NOW(), updated_at) >= 30
+    `);
+    
+    if (clubsToDelete.length > 0) {
+      console.log(`Found ${clubsToDelete.length} clubs to delete`);
+      
+      for (const club of clubsToDelete) {
+        // Delete related data first (foreign key constraints)
+        await dbase.query('DELETE FROM club_members WHERE club_id = ?', [club.club_id]);
+        await dbase.query('DELETE FROM club_items WHERE club_id = ?', [club.club_id]);
+        await dbase.query('DELETE FROM club_mom WHERE club_id = ?', [club.club_id]);
+        
+        // Delete the club
+        await dbase.query('DELETE FROM clubs WHERE club_id = ?', [club.club_id]);
+        
+        console.log(`✅ Deleted club: ${club.club_name} (ID: ${club.club_id})`);
+      }
+    } else {
+      console.log('No clubs to delete');
+    }
+  } catch (err) {
+    console.error('❌ Error in scheduled deletion:', err);
+  }
+});
 
 // Start server
 app.listen(PORT, () => {

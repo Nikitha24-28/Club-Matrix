@@ -10,15 +10,31 @@ const JoinRequests = () => {
     const fetchJoinRequests = async () => {
       try {
         setLoading(true);
+        setError(null);
         const userEmail = localStorage.getItem("email");
+        
+        if (!userEmail) {
+          throw new Error("User email not found. Please log in again.");
+        }
+        
         const response = await fetch(
           `http://localhost:5000/clubs/requests?email=${encodeURIComponent(userEmail)}`
         );
-        if (!response.ok) throw new Error("Failed to fetch join requests");
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            setJoinRequests([]);
+            return;
+          }
+          throw new Error(`Failed to fetch join requests: ${response.status} ${response.statusText}`);
+        }
+        
         const data = await response.json();
-        setJoinRequests(data);
+        setJoinRequests(Array.isArray(data) ? data : []);
       } catch (err) {
+        console.error("Error fetching join requests:", err);
         setError(err.message);
+        setJoinRequests([]);
       } finally {
         setLoading(false);
       }
@@ -45,9 +61,20 @@ const JoinRequests = () => {
           <h3 className="content-heading">Pending Join Requests</h3>
           
           {loading ? (
-            <p>Loading requests...</p>
+            <div className="loading-state">
+              <div className="loading-spinner"></div>
+              <p>Loading your join requests...</p>
+            </div>
           ) : error ? (
-            <p>Error: {error}</p>
+            <div className="error-state">
+              <p className="error-message">Error: {error}</p>
+              <button 
+                className="retry-button" 
+                onClick={() => window.location.reload()}
+              >
+                Retry
+              </button>
+            </div>
           ) : allRequests.length === 0 ? (
             <div className="no-requests">
               <p>You have no pending join requests.</p>
@@ -55,17 +82,17 @@ const JoinRequests = () => {
             </div>
           ) : (
             <div className="requests-list">
-              {allRequests.map((request) => (
-                <div key={request.club_id} className="request-card">
+              {allRequests.map((request, index) => (
+                <div key={request.club_id || request.id || index} className="request-card">
                   <div className="request-info">
-                    <h4 className="club-name">{request.clubName}</h4>
-                    <p className="club-description">{request.clubDescription}</p>
-                    <p className="club-category">{request.clubCategory}</p>
+                    <h4 className="club-name">{request.clubName || request.name || 'Unknown Club'}</h4>
+                    <p className="club-description">{request.clubDescription || request.description || 'No description available'}</p>
+                    <p className="club-category">{request.clubCategory || request.category || 'Uncategorized'}</p>
                     <p className="request-date">
-                      Requested on: {new Date(request.requestDate).toLocaleDateString()}
+                      Requested on: {request.requestDate ? new Date(request.requestDate).toLocaleDateString() : 'Date not available'}
                     </p>
                     <p className="request-reason">
-                      <strong>Reason:</strong> {request.request_reason || "N/A"}
+                      <strong>Reason:</strong> {request.request_reason || request.reason || "N/A"}
                     </p>
                   </div>
                 </div>
