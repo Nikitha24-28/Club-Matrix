@@ -296,10 +296,7 @@ const MoM = () => {
     }
   };
 
-  const handleViewMoM = (mom) => {
-    setSelectedMoM(mom);
-    setShowViewModal(true);
-  };
+  
 
   const handleDownload = (mom) => {
     const link = document.createElement('a');
@@ -444,19 +441,8 @@ const MoM = () => {
                   <h3 className="mom-row-title">{mom.meeting_title}</h3>
                   <span className="mom-row-date">{formatDate(mom.meeting_date)}</span>
                   <div className="mom-row-actions">
-                    <button
-                      className="view-btn"
-                      onClick={() => handleViewMoM(mom)}
-                    >
-                      View
-                    </button>
-                    <button
-                      className="download-btn"
-                      onClick={() => handleDownload(mom)}
-                      disabled={!mom.fileUrl}
-                    >
-                      📥 Download
-                    </button>
+                    
+                    
                     {userRole === 'Coordinator' && (
                       <button
                         className="delete-btn"
@@ -554,25 +540,7 @@ const MoM = () => {
             </div>
 
             <div className="modal-body">
-              <div className="form-group">
-                <label>MoM ID (auto-generated)</label>
-                <input
-                  type="text"
-                  value="Will be assigned on save"
-                  readOnly
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Club ID</label>
-                <input
-                  type="text"
-                  value={clubId}
-                  readOnly
-                  className="form-input"
-                />
-              </div>
+            
 
               <div className="form-group">
                 <label>Meeting Title *</label>

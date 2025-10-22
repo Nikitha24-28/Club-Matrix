@@ -1,67 +1,111 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Users, Calendar, TrendingUp, Shield, Target, Globe, BarChart3, Menu, X, Star } from 'lucide-react';
-import clubHeroImage from '../../assets/image.png';
-import './priorlogin.css';
+import { 
+  ArrowRight, Users, Calendar, TrendingUp, Shield, 
+  Target, Globe, BarChart3, Menu, X, Star, Zap,
+  CheckCircle2, Sparkles
+} from 'lucide-react';
+import './PriorLogin.css';
 
 const PriorLogin = () => {
-    const navigate = useNavigate();
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const handleSignIn = () => {
-        navigate('/login');
-    };
-    
-    const handleGetStarted = () => {
-        navigate('/signup');
-    };
-    useEffect(() => {
-        try {
-            localStorage.removeItem('role');
-            localStorage.removeItem('email');
-        } catch (e) {
-            // no-op
-        }
-    }, []);
+  const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  const handleSignIn = () => {
+    navigate('/login');
+  };
+  
+  const handleGetStarted = () => {
+    navigate('/signup');
+  };
+  
+  useEffect(() => {
+    try {
+      localStorage.removeItem('role');
+      localStorage.removeItem('email');
+    } catch (e) {
+      // no-op
+    }
+  }, []);
+
   return (
     <div className="prior-login">
+      {/* Animated Background */}
+      <div className="background-mesh"></div>
+      <div className="background-gradient"></div>
+
       {/* Navbar */}
       <nav className="navbar">
-        <div className="navbar-left">
-          <button className="navbar-burger" aria-label="Open menu" onClick={() => setIsMobileMenuOpen(true)}>
-            <Menu />
-          </button>
-          <div className="navbar-brand">
-            <h2 className="brand-title">CLUB MATRIX</h2>
+        <div className="navbar-container">
+          <div className="navbar-left">
+            <button 
+              className="navbar-burger" 
+              aria-label="Open menu" 
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
+              <Menu size={24} />
+            </button>
+            <div className="navbar-brand">
+              <Sparkles size={24} className="brand-icon" />
+              <h1 className="brand-title">CLUB MATRIX</h1>
+            </div>
+          </div>
+          
+          <div className="navbar-links">
+            <a href="#features" className="nav-link">Features</a>
+            <a href="#testimonials" className="nav-link">Testimonials</a>
+            <a href="#pricing" className="nav-link">Pricing</a>
+          </div>
+          
+          <div className="navbar-actions">
+            <button className="btn btn-ghost" onClick={handleSignIn}>
+              Sign In
+            </button>
+            <button className="btn btn-primary" onClick={handleGetStarted}>
+              Get Started
+              <ArrowRight size={16} />
+            </button>
           </div>
         </div>
-        
-        <div className="navbar-links">
-          <a href="#features" className="nav-link">Features</a>
-          <a href="#testimonials" className="nav-link">Testimonials</a>
-          <a href="#contact" className="nav-link">Contact</a>
-        </div>
-        
-        <div className="navbar-actions">
-          <button className="btn btn-ghost" onClick={handleSignIn}>Sign In</button>
-          <button className="btn btn-hero" onClick={handleGetStarted}>Get Started</button>
-        </div>
 
+        {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="mobile-menu" role="dialog" aria-modal="true">
-            <div className="mobile-menu-header">
-              <h3 className="brand-title">CLUB MATRIX</h3>
-              <button className="close-mobile" aria-label="Close menu" onClick={() => setIsMobileMenuOpen(false)}>
-                <X />
-              </button>
-            </div>
-            <div className="mobile-menu-links">
-              <a href="#features" onClick={() => setIsMobileMenuOpen(false)}>Features</a>
-              <a href="#testimonials" onClick={() => setIsMobileMenuOpen(false)}>Testimonials</a>
-              <a href="#contact" onClick={() => setIsMobileMenuOpen(false)}>Contact</a>
-            </div>
-            <div className="mobile-menu-actions">
-              <button className="btn btn-outline" onClick={() => { setIsMobileMenuOpen(false); handleSignIn(); }}>Sign In</button>
-              <button className="btn btn-hero" onClick={() => { setIsMobileMenuOpen(false); handleGetStarted(); }}>Get Started</button>
+          <div className="mobile-menu">
+            <div className="mobile-menu-overlay" onClick={() => setIsMobileMenuOpen(false)}></div>
+            <div className="mobile-menu-content">
+              <div className="mobile-menu-header">
+                <div className="navbar-brand">
+                  <Sparkles size={24} className="brand-icon" />
+                  <h3 className="brand-title">CLUB MATRIX</h3>
+                </div>
+                <button 
+                  className="close-mobile" 
+                  aria-label="Close menu" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <X size={24} />
+                </button>
+              </div>
+              <div className="mobile-menu-links">
+                <a href="#features" onClick={() => setIsMobileMenuOpen(false)}>Features</a>
+                <a href="#testimonials" onClick={() => setIsMobileMenuOpen(false)}>Testimonials</a>
+                <a href="#pricing" onClick={() => setIsMobileMenuOpen(false)}>Pricing</a>
+              </div>
+              <div className="mobile-menu-actions">
+                <button 
+                  className="btn btn-ghost btn-block" 
+                  onClick={() => { setIsMobileMenuOpen(false); handleSignIn(); }}
+                >
+                  Sign In
+                </button>
+                <button 
+                  className="btn btn-primary btn-block" 
+                  onClick={() => { setIsMobileMenuOpen(false); handleGetStarted(); }}
+                >
+                  Get Started
+                  <ArrowRight size={16} />
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -71,78 +115,69 @@ const PriorLogin = () => {
         {/* Hero Section */}
         <section className="hero">
           <div className="hero-container">
-            <div className="hero-content">
-              <div className="hero-text">
-                <h1 className="hero-title">
-                  Transform Your Club Management with 
-                  <span className="hero-gradient-text"> CLUB MATRIX</span>
-                </h1>
-                <p className="hero-description">
-                  The ultimate platform for managing clubs, tracking attendance, organizing events, 
-                  and building stronger communities. Join thousands of successful clubs worldwide.
-                </p>
-                <div className="hero-actions">
-                  <button className="btn btn-hero btn-lg" onClick={handleGetStarted}>
-                    Start Building Your Club
-                    <ArrowRight className="btn-icon" />
-                  </button>
-                  <button className="btn btn-outline btn-lg">
-                    Watch Demo
-                  </button>
-                </div>
-                <div className="hero-features">
-                  <div className="hero-feature">
-                    <div className="feature-icon">
-                      <Users />
-                    </div>
-                    <span>10,000+ Active Clubs</span>
-                  </div>
-                  <div className="hero-feature">
-                    <div className="feature-icon">
-                      <TrendingUp />
-                    </div>
-                    <span>98% Satisfaction Rate</span>
-                  </div>
-                  <div className="hero-feature">
-                    <div className="feature-icon">
-                      <Shield />
-                    </div>
-                    <span>Enterprise Security</span>
-                  </div>
-                </div>
+            <div className="hero-badge">
+              <Zap size={14} />
+              <span>Trusted by 10,000+ clubs worldwide</span>
+            </div>
+            
+            <h1 className="hero-title">
+              Manage Your Club with
+              <span className="hero-gradient-text"> Intelligence</span>
+            </h1>
+            
+            <p className="hero-description">
+              The ultimate platform for modern club management. Track attendance, 
+              organize events, and build thriving communities with powerful analytics 
+              and automation.
+            </p>
+            
+            <div className="hero-actions">
+              <button className="btn btn-hero btn-lg" onClick={handleGetStarted}>
+                Start Free Trial
+                <ArrowRight size={20} />
+              </button>
+              <button className="btn btn-outline btn-lg">
+                Watch Demo
+              </button>
+            </div>
+            
+            <div className="hero-stats">
+              <div className="hero-stat">
+                <div className="hero-stat-value">10k+</div>
+                <div className="hero-stat-label">Active Clubs</div>
               </div>
-              <div className="hero-image">
-                <div className="hero-image-container">
-                  <img src={clubHeroImage} alt="Illustration of a club dashboard and analytics" />
-                  <div className="hero-image-overlay"></div>
-                </div>
+              <div className="hero-stat">
+                <div className="hero-stat-value">250k+</div>
+                <div className="hero-stat-label">Events Hosted</div>
+              </div>
+              <div className="hero-stat">
+                <div className="hero-stat-value">99.9%</div>
+                <div className="hero-stat-label">Uptime</div>
               </div>
             </div>
-          </div>
-        </section>
 
-        {/* Stats Strip */}
-        <section className="stats">
-          <div className="stats-container">
-            <div className="stat-item">
-              <Users className="stat-icon" />
-              <div className="stat-text">
-                <div className="stat-value">10k+</div>
-                <div className="stat-label">Clubs Managed</div>
+            {/* Floating Cards */}
+            <div className="hero-cards">
+              <div className="floating-card card-1">
+                <Users size={20} />
+                <div>
+                  <div className="card-title">Member Growth</div>
+                  <div className="card-value">+127%</div>
+                </div>
               </div>
-            </div>
-            <div className="stat-item">
-              <Calendar className="stat-icon" />
-              <div className="stat-text">
-                <div className="stat-value">250k+</div>
-                <div className="stat-label">Events Organized</div>
+              <div className="floating-card card-2">
+                <TrendingUp size={20} />
+                <div>
+                  <div className="card-title">Engagement</div>
+                  <div className="card-value">98.5%</div>
+                </div>
               </div>
-            </div>
-            <div className="stat-item">
-              <Shield className="stat-icon" />
-              <div className="stat-text">
-                <div className="stat-value">99.9%</div>
-                <div className="stat-label">Uptime & Security</div>
+              <div className="floating-card card-3">
+                <Calendar size={20} />
+                <div>
+                  <div className="card-title">Events This Month</div>
+                  <div className="card-value">47</div>
+                </div>
               </div>
             </div>
           </div>
@@ -151,114 +186,105 @@ const PriorLogin = () => {
         {/* Features Section */}
         <section id="features" className="features">
           <div className="features-container">
-            <div className="features-header">
-              <h2 className="features-title">Everything You Need to Manage Your Club</h2>
-              <p className="features-subtitle">
-                Comprehensive tools designed to streamline every aspect of club management, 
-                from member onboarding to event planning and community building.
+            <div className="section-header">
+              <div className="section-badge">
+                <Sparkles size={14} />
+                <span>Features</span>
+              </div>
+              <h2 className="section-title">Everything you need to succeed</h2>
+              <p className="section-description">
+                Powerful tools designed to streamline club management and boost engagement
               </p>
             </div>
 
             <div className="features-grid">
               <div className="feature-card">
-                <div className="feature-icon-large">
+                <div className="feature-icon">
                   <Users />
                 </div>
-                <h3 className="feature-title">Smart Member Management</h3>
+                <h3 className="feature-title">Member Management</h3>
                 <p className="feature-description">
-                  Effortlessly manage member profiles, track contributions, and handle membership tiers 
-                  with our intuitive member management system.
+                  Track member profiles, contributions, and engagement with intuitive dashboards and automated workflows.
                 </p>
                 <ul className="feature-list">
-                  <li>Member profiles & directories</li>
-                  <li>Contribution tracking</li>
-                  <li>Membership tiers & roles</li>
-                  <li>Automated member onboarding</li>
+                  <li><CheckCircle2 size={16} /> Profile directories</li>
+                  <li><CheckCircle2 size={16} /> Role management</li>
+                  <li><CheckCircle2 size={16} /> Activity tracking</li>
                 </ul>
               </div>
 
               <div className="feature-card">
-                <div className="feature-icon-large">
+                <div className="feature-icon">
                   <Calendar />
                 </div>
-                <h3 className="feature-title">Event & Meeting Management</h3>
+                <h3 className="feature-title">Event Planning</h3>
                 <p className="feature-description">
-                  Plan, schedule, and track all your club events and meetings with powerful 
-                  organizational tools and automated reminders.
+                  Schedule events, send automated reminders, and manage RSVPs all in one place.
                 </p>
                 <ul className="feature-list">
-                  <li>Event scheduling & planning</li>
-                  <li>Meeting minutes tracking</li>
-                  <li>Automated notifications</li>
-                  <li>RSVP management</li>
+                  <li><CheckCircle2 size={16} /> Smart scheduling</li>
+                  <li><CheckCircle2 size={16} /> Auto notifications</li>
+                  <li><CheckCircle2 size={16} /> RSVP tracking</li>
                 </ul>
               </div>
 
               <div className="feature-card">
-                <div className="feature-icon-large">
+                <div className="feature-icon">
                   <BarChart3 />
                 </div>
-                <h3 className="feature-title">Attendance Tracking</h3>
+                <h3 className="feature-title">Analytics & Insights</h3>
                 <p className="feature-description">
-                  Monitor member engagement with comprehensive attendance tracking, 
-                  detailed analytics, and automated reporting systems.
+                  Understand your club's performance with detailed analytics and actionable insights.
                 </p>
                 <ul className="feature-list">
-                  <li>Real-time attendance monitoring</li>
-                  <li>Engagement analytics</li>
-                  <li>Automated reports</li>
-                  <li>Member activity insights</li>
+                  <li><CheckCircle2 size={16} /> Real-time metrics</li>
+                  <li><CheckCircle2 size={16} /> Engagement reports</li>
+                  <li><CheckCircle2 size={16} /> Custom dashboards</li>
                 </ul>
               </div>
 
               <div className="feature-card">
-                <div className="feature-icon-large">
+                <div className="feature-icon">
                   <Target />
                 </div>
-                <h3 className="feature-title">Goal & Project Management</h3>
+                <h3 className="feature-title">Goal Tracking</h3>
                 <p className="feature-description">
-                  Set club objectives, track progress, and manage collaborative projects 
-                  with integrated planning and monitoring tools.
+                  Set objectives, track progress, and celebrate achievements with your team.
                 </p>
                 <ul className="feature-list">
-                  <li>Goal setting & tracking</li>
-                  <li>Project collaboration</li>
-                  <li>Progress monitoring</li>
-                  <li>Achievement milestones</li>
+                  <li><CheckCircle2 size={16} /> Milestone tracking</li>
+                  <li><CheckCircle2 size={16} /> Progress reports</li>
+                  <li><CheckCircle2 size={16} /> Team collaboration</li>
                 </ul>
               </div>
 
               <div className="feature-card">
-                <div className="feature-icon-large">
+                <div className="feature-icon">
                   <Globe />
                 </div>
-                <h3 className="feature-title">Public & Private Clubs</h3>
+                <h3 className="feature-title">Public & Private</h3>
                 <p className="feature-description">
-                  Create public clubs for open communities or private clubs for exclusive groups, 
-                  with flexible privacy and access controls.
+                  Create public clubs for discovery or private clubs with custom access controls.
                 </p>
                 <ul className="feature-list">
-                  <li>Public club discovery</li>
-                  <li>Private club security</li>
-                  <li>Invitation management</li>
-                  <li>Access control settings</li>
+                  <li><CheckCircle2 size={16} /> Visibility settings</li>
+                  <li><CheckCircle2 size={16} /> Invite management</li>
+                  <li><CheckCircle2 size={16} /> Access controls</li>
                 </ul>
               </div>
 
               <div className="feature-card">
-                <div className="feature-icon-large">
+                <div className="feature-icon">
                   <Shield />
                 </div>
-                <h3 className="feature-title">Security & Analytics</h3>
+                <h3 className="feature-title">Enterprise Security</h3>
                 <p className="feature-description">
-                  Enterprise-grade security with comprehensive analytics to understand 
-                  your club's growth, engagement, and performance metrics.
+                  Bank-level encryption and security to keep your club data safe and protected.
                 </p>
                 <ul className="feature-list">
-                  <li>End-to-end encryption</li>
-                  <li>Advanced analytics</li>
-                  <li>Performance insights</li>
-                  <li>Security monitoring</li>
+                  <li><CheckCircle2 size={16} /> End-to-end encryption</li>
+                  <li><CheckCircle2 size={16} /> Regular backups</li>
+                  <li><CheckCircle2 size={16} /> 99.9% uptime</li>
                 </ul>
               </div>
             </div>
@@ -268,59 +294,100 @@ const PriorLogin = () => {
         {/* Testimonials */}
         <section id="testimonials" className="testimonials">
           <div className="testimonials-container">
-            <div className="testimonials-header">
-              <h2 className="testimonials-title">Loved by Clubs Everywhere</h2>
-              <p className="testimonials-subtitle">What coordinators and members are saying</p>
+            <div className="section-header">
+              <div className="section-badge">
+                <Star size={14} />
+                <span>Testimonials</span>
+              </div>
+              <h2 className="section-title">Loved by club leaders everywhere</h2>
+              <p className="section-description">
+                See what coordinators are saying about Club Matrix
+              </p>
             </div>
+            
             <div className="testimonials-grid">
               <div className="testimonial-card">
                 <div className="testimonial-stars">
-                  <Star /><Star /><Star /><Star /><Star />
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={16} fill="currentColor" />
+                  ))}
                 </div>
-                <p>Club Matrix made organizing our events and tracking attendance effortless. Our engagement has never been higher.</p>
-                <div className="testimonial-author">— Aisha, Tech Innovators</div>
+                <p className="testimonial-text">
+                  "Club Matrix transformed how we manage our tech community. The analytics 
+                  alone have helped us boost engagement by over 150%."
+                </p>
+                <div className="testimonial-author">
+                  <div className="author-avatar">A</div>
+                  <div>
+                    <div className="author-name">Aisha Kumar</div>
+                    <div className="author-role">Founder, Tech Innovators</div>
+                  </div>
+                </div>
               </div>
+
               <div className="testimonial-card">
                 <div className="testimonial-stars">
-                  <Star /><Star /><Star /><Star /><Star />
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={16} fill="currentColor" />
+                  ))}
                 </div>
-                <p>The member management tools are fantastic. We love the analytics for understanding participation trends.</p>
-                <div className="testimonial-author">— Rahul, Photography Fans</div>
+                <p className="testimonial-text">
+                  "The event management tools are incredible. We've organized over 100 
+                  events this year with zero hassle."
+                </p>
+                <div className="testimonial-author">
+                  <div className="author-avatar">R</div>
+                  <div>
+                    <div className="author-name">Rahul Mehta</div>
+                    <div className="author-role">President, Photography Club</div>
+                  </div>
+                </div>
               </div>
+
               <div className="testimonial-card">
                 <div className="testimonial-stars">
-                  <Star /><Star /><Star /><Star /><Star />
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={16} fill="currentColor" />
+                  ))}
                 </div>
-                <p>Secure and reliable. The platform scales smoothly for our growing community.</p>
-                <div className="testimonial-author">— Mei, Gaming Masters</div>
+                <p className="testimonial-text">
+                  "Security and reliability are top-notch. We trust Club Matrix with all 
+                  our community data."
+                </p>
+                <div className="testimonial-author">
+                  <div className="author-avatar">M</div>
+                  <div>
+                    <div className="author-name">Mei Chen</div>
+                    <div className="author-role">Lead, Gaming Masters</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
         {/* CTA Section */}
-        <section className="cta">
+        <section id="pricing" className="cta">
           <div className="cta-container">
             <div className="cta-content">
-              <div className="cta-overlay"></div>
-              <div className="cta-text">
-                <h2 className="cta-title">Ready to Transform Your Club?</h2>
-                <p className="cta-description">
-                  Join thousands of successful clubs already using CLUB MATRIX. 
-                  Start building stronger communities today.
-                </p>
-                <div className="cta-actions">
-                  <button className="btn btn-cta-primary" onClick={handleGetStarted}>
-                    Create Your Club Now
-                    <ArrowRight className="btn-icon" />
-                  </button>
-                  <button className="btn btn-cta-outline">
-                    Watch Demo
-                  </button>
-                </div>
-                <div className="cta-features">
-                  ✓ Free 14-day trial • ✓ No credit card required • ✓ Setup in minutes
-                </div>
+              <h2 className="cta-title">Ready to elevate your club?</h2>
+              <p className="cta-description">
+                Join thousands of successful clubs already using Club Matrix to build 
+                stronger communities and drive engagement.
+              </p>
+              <div className="cta-actions">
+                <button className="btn btn-cta-primary" onClick={handleGetStarted}>
+                  Start Free Trial
+                  <ArrowRight size={20} />
+                </button>
+                <button className="btn btn-cta-secondary">
+                  Schedule Demo
+                </button>
+              </div>
+              <div className="cta-features">
+                <span><CheckCircle2 size={16} /> 14-day free trial</span>
+                <span><CheckCircle2 size={16} /> No credit card required</span>
+                <span><CheckCircle2 size={16} /> Cancel anytime</span>
               </div>
             </div>
           </div>
@@ -328,36 +395,54 @@ const PriorLogin = () => {
       </main>
 
       {/* Footer */}
-      <footer id="contact" className="footer">
+      <footer className="footer">
         <div className="footer-container">
           <div className="footer-top">
             <div className="footer-brand">
-              <h3 className="brand-title">CLUB MATRIX</h3>
-              <p>Manage clubs, build communities, and grow together.</p>
+              <div className="navbar-brand">
+                <Sparkles size={24} className="brand-icon" />
+                <h3 className="brand-title">CLUB MATRIX</h3>
+              </div>
+              <p className="footer-tagline">
+                Empowering communities through intelligent club management.
+              </p>
             </div>
+            
             <div className="footer-links">
               <div className="footer-column">
                 <h4>Product</h4>
                 <a href="#features">Features</a>
-                <a href="#">Pricing</a>
-                <a href="#">Security</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#testimonials">Testimonials</a>
               </div>
               <div className="footer-column">
                 <h4>Company</h4>
-                <a href="#testimonials">Testimonials</a>
-                <a href="#contact">Contact</a>
+                <a href="#">About</a>
                 <a href="#">Careers</a>
+                <a href="#">Contact</a>
               </div>
               <div className="footer-column">
                 <h4>Resources</h4>
-                <a href="#">Docs</a>
+                <a href="#">Documentation</a>
                 <a href="#">Guides</a>
                 <a href="#">Support</a>
               </div>
+              <div className="footer-column">
+                <h4>Legal</h4>
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+                <a href="#">Security</a>
+              </div>
             </div>
           </div>
+          
           <div className="footer-bottom">
             <p>© {new Date().getFullYear()} Club Matrix. All rights reserved.</p>
+            <div className="footer-social">
+              <a href="#" aria-label="Twitter">Twitter</a>
+              <a href="#" aria-label="LinkedIn">LinkedIn</a>
+              <a href="#" aria-label="GitHub">GitHub</a>
+            </div>
           </div>
         </div>
       </footer>

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { AlertTriangle, Shield, X } from 'lucide-react';
 import axios from 'axios';
 import {
   Users,
@@ -8,14 +7,15 @@ import {
   Target,
   FileText,
   Megaphone,
-  Upload,
   Eye,
   Plus,
   Clock,
   UserPlus,
   ChevronDown,
   ChevronRight,
-  X
+  X,
+  AlertTriangle,
+  Shield
 } from 'lucide-react';
 import './ClubDashboard.css';
 
@@ -45,8 +45,8 @@ const ClubDashboard = () => {
   const [showJoinRequests, setShowJoinRequests] = useState(true);
   const [joinRequests, setJoinRequests] = useState([]);
   const [blockStatus, setBlockStatus] = useState(null);
-const [showUnblockModal, setShowUnblockModal] = useState(false);
-const [unblockReason, setUnblockReason] = useState('');
+  const [showUnblockModal, setShowUnblockModal] = useState(false);
+  const [unblockReason, setUnblockReason] = useState('');
   
   // Modal states
   const [showEventModal, setShowEventModal] = useState(false);
@@ -116,6 +116,7 @@ const [unblockReason, setUnblockReason] = useState('');
       console.error('Error submitting unblock request:', error);
       alert(error.response?.data?.message || 'Failed to submit unblock request');
     }
+  };
 
   // Fetch club information
   useEffect(() => {
@@ -572,64 +573,63 @@ const [unblockReason, setUnblockReason] = useState('');
           {role === 'Coordinator' ? 'Coordinator' : 'Member'}
         </div>
       </div>
+      
       {blockStatus?.blockStatus === 'Blocked' && (
-  <div className="block-notification-container">
-    <div className={`block-notification ${blockStatus.daysRemaining <= 7 ? 'urgent' : ''}`}>
-      <div className="notification-icon">
-        <AlertTriangle size={24} />
-      </div>
-      <div className="notification-content">
-        <h3 className="notification-title">
-          {blockStatus.willBeDeleted ? 'Critical: Club Will Be Deleted' : 'Club is Blocked'}
-        </h3>
-        <p className="notification-message">
-          {blockStatus.willBeDeleted ? (
-            <>Your club has been blocked for 30 days and will be <strong>permanently deleted</strong>. Submit an unblock request immediately!</>
-          ) : (
-            <>Your club has been blocked by admin. You have <strong>{blockStatus.daysRemaining} days</strong> remaining to submit an unblock request before permanent deletion.</>
-          )}
-        </p>
-        <div className="notification-details">
-          <div className="detail-item">
-            <span className="detail-label">Block Reason:</span>
-            <span className="detail-value">
-              {blockStatus.blockReason?.startsWith('UNBLOCK_REQUEST:') 
-                ? blockStatus.blockReason.replace('UNBLOCK_REQUEST: ', 'Your Request: ')
-                : blockStatus.blockReason || 'No reason provided'}
-            </span>
-          </div>
-          <div className="detail-item">
-            <span className="detail-label">Days Blocked:</span>
-            <span className="detail-value">{blockStatus.daysBlocked} days</span>
-          </div>
-          <div className="detail-item">
-            <span className="detail-label">Days Remaining:</span>
-            <span className={`detail-value ${blockStatus.daysRemaining <= 7 ? 'urgent-text' : ''}`}>
-              {blockStatus.daysRemaining} days
-            </span>
+        <div className="block-notification-container">
+          <div className={`block-notification ${blockStatus.daysRemaining <= 7 ? 'urgent' : ''}`}>
+            <div className="notification-icon">
+              <AlertTriangle size={24} />
+            </div>
+            <div className="notification-content">
+              <h3 className="notification-title">
+                {blockStatus.willBeDeleted ? 'Critical: Club Will Be Deleted' : 'Club is Blocked'}
+              </h3>
+              <p className="notification-message">
+                {blockStatus.willBeDeleted ? (
+                  <>Your club has been blocked for 30 days and will be <strong>permanently deleted</strong>. Submit an unblock request immediately!</>
+                ) : (
+                  <>Your club has been blocked by admin. You have <strong>{blockStatus.daysRemaining} days</strong> remaining to submit an unblock request before permanent deletion.</>
+                )}
+              </p>
+              <div className="notification-details">
+                <div className="detail-item">
+                  <span className="detail-label">Block Reason:</span>
+                  <span className="detail-value">
+                    {blockStatus.blockReason?.startsWith('UNBLOCK_REQUEST:') 
+                      ? blockStatus.blockReason.replace('UNBLOCK_REQUEST: ', 'Your Request: ')
+                      : blockStatus.blockReason || 'No reason provided'}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Days Blocked:</span>
+                  <span className="detail-value">{blockStatus.daysBlocked} days</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Days Remaining:</span>
+                  <span className={`detail-value ${blockStatus.daysRemaining <= 7 ? 'urgent-text' : ''}`}>
+                    {blockStatus.daysRemaining} days
+                  </span>
+                </div>
+              </div>
+              {role === 'Coordinator' && !blockStatus.blockReason?.startsWith('UNBLOCK_REQUEST:') && (
+                <button 
+                  className="unblock-request-btn"
+                  onClick={() => setShowUnblockModal(true)}
+                >
+                  <Shield size={18} />
+                  Request Unblock
+                </button>
+              )}
+              {blockStatus.blockReason?.startsWith('UNBLOCK_REQUEST:') && (
+                <div className="request-pending-badge">
+                  <Shield size={16} />
+                  Unblock request pending admin review
+                </div>
+              )}
+            </div>
           </div>
         </div>
-        {role === 'Coordinator' && !blockStatus.blockReason?.startsWith('UNBLOCK_REQUEST:') && (
-          <button 
-            className="unblock-request-btn"
-            onClick={() => setShowUnblockModal(true)}
-          >
-            <Shield size={18} />
-            Request Unblock
-          </button>
-        )}
-        {blockStatus.blockReason?.startsWith('UNBLOCK_REQUEST:') && (
-          <div className="request-pending-badge">
-            <Shield size={16} />
-            Unblock request pending admin review
-          </div>
-        )}
-      </div>
-    </div>
-  </div>
-)}
-
-
+      )}
 
       <div className="stats-section">
         <h2>Club Statistics</h2>
@@ -1275,67 +1275,66 @@ const [unblockReason, setUnblockReason] = useState('');
           </div>
         </div>
       )}
+
       {showUnblockModal && (
-  <div className="modal-overlay" onClick={() => setShowUnblockModal(false)}>
-    <div className="modal-container" onClick={(e) => e.stopPropagation()}>
-      <div className="modal-header">
-        <h2>
-          <Shield className="modal-icon" style={{ color: '#10b981' }} />
-          Request Club Unblock
-        </h2>
-        <button className="modal-close" onClick={() => setShowUnblockModal(false)}>
-          <X className="icon-sm" />
-        </button>
-      </div>
+        <div className="modal-overlay" onClick={() => setShowUnblockModal(false)}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>
+                <Shield className="modal-icon" style={{ color: '#10b981' }} />
+                Request Club Unblock
+              </h2>
+              <button className="modal-close" onClick={() => setShowUnblockModal(false)}>
+                <X className="icon-sm" />
+              </button>
+            </div>
 
-      <div className="modal-body">
-        <div className="modal-info">
-          <AlertTriangle size={20} style={{ color: '#f59e0b' }} />
-          <p>Explain why your club should be unblocked. The admin will review your request.</p>
+            <div className="modal-body">
+              <div className="modal-info">
+                <AlertTriangle size={20} style={{ color: '#f59e0b' }} />
+                <p>Explain why your club should be unblocked. The admin will review your request.</p>
+              </div>
+              
+              <div className="form-group">
+                <label>Reason for Unblocking *</label>
+                <textarea
+                  value={unblockReason}
+                  onChange={(e) => setUnblockReason(e.target.value)}
+                  placeholder="Explain what corrective actions you've taken and why the club should be unblocked..."
+                  rows="5"
+                  className="modal-textarea"
+                  required
+                />
+                <p className="form-hint">
+                  Be specific about how you've addressed the issues that led to the block.
+                </p>
+              </div>
+
+              <div className="modal-warning-box">
+                <strong>Important:</strong> You have {blockStatus?.daysRemaining} days remaining before permanent deletion.
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button 
+                type="button" 
+                className="btn-cancel" 
+                onClick={() => setShowUnblockModal(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                className="btn-submit"
+                onClick={handleUnblockRequest}
+                disabled={!unblockReason.trim()}
+              >
+                Submit Request
+              </button>
+            </div>
+          </div>
         </div>
-        
-        <div className="form-group">
-          <label>Reason for Unblocking *</label>
-          <textarea
-            value={unblockReason}
-            onChange={(e) => setUnblockReason(e.target.value)}
-            placeholder="Explain what corrective actions you've taken and why the club should be unblocked..."
-            rows="5"
-            className="modal-textarea"
-            required
-          />
-          <p className="form-hint">
-            Be specific about how you've addressed the issues that led to the block.
-          </p>
-        </div>
-
-        <div className="modal-warning-box">
-          <strong>Important:</strong> You have {blockStatus?.daysRemaining} days remaining before permanent deletion.
-        </div>
-      </div>
-
-      <div className="modal-actions">
-        <button 
-          type="button" 
-          className="btn-cancel" 
-          onClick={() => setShowUnblockModal(false)}
-        >
-          Cancel
-        </button>
-        <button 
-          type="button" 
-          className="btn-submit"
-          onClick={handleUnblockRequest}
-          disabled={!unblockReason.trim()}
-        >
-          Submit Request
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
-
+      )}
     </div>
   );
 };

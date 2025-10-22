@@ -180,11 +180,7 @@ const Profile = () => {
       {profileData.clubs.map((club) => (
         <div key={club.id} className="club-card">
           <div className="club-header">
-            <img 
-              src={club.logo} 
-              alt={club.name} 
-              className="club-logo"
-            />
+            
             <div className="club-info">
               <h3 className="club-name">{club.name}</h3>
               <span className="club-category">{club.category}</span>
