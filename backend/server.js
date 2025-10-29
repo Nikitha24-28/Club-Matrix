@@ -189,11 +189,11 @@ app.get("/profile/:email", async (req, res) => {
         cl.club_id,
         cl.club_name,
         cl.description AS club_description,
-        cl.category AS club_category
+        cl.category AS club_category 
     FROM clients c
     LEFT JOIN club_members cm ON c.client_id = cm.client_id
     LEFT JOIN clubs cl ON cm.club_id = cl.club_id
-    WHERE c.mail = ?;
+    WHERE c.mail = ? and not cm.role='Request';
   `;
 
   try {

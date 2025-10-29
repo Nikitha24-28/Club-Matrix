@@ -107,11 +107,12 @@
 .brand-title {
   font-size: 1.25rem;
   font-weight: 1000;
-  color: black;
   letter-spacing: -0.02em;
   background: linear-gradient(135deg, hsl(262 83% 58%), hsl(189 94% 43%));
   -webkit-background-clip: text;
   background-clip: text;
+  color: transparent; /* 🔥 required */
+  -webkit-text-fill-color: transparent;
   
 }
 
@@ -136,6 +137,9 @@
   transition: color 0.3s ease;
 }
 
+.head{
+  color: black;
+}
 .nav-link:hover {
   color: hsl(var(--foreground));
 }

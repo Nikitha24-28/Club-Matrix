@@ -61,12 +61,7 @@ const Nav = ({ userRole = 'general', userStatus = 'member', currentClub = null }
       link: "/JoinRequestsPage",
       roles: ['general', 'member']
     },
-    { 
-      icon: <Settings size={20} />, 
-      label: "Settings", 
-      link: "/SettingsPage",
-      roles: ['general', 'member', 'coordinator']
-    }
+    
   ];
 
   // Club-specific navigation items for members

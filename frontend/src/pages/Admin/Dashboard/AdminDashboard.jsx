@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  BarChart, Users, Calendar, Target, Shield, Ban, Search, Activity, X, AlertTriangle
+  BarChart, Users, Calendar, Target, Shield, Ban, Search, Activity, X, AlertTriangle, LogOut,
 } from 'lucide-react';
 import './AdminDashboard.css';
 
@@ -33,6 +34,13 @@ const AdminDashboard = () => {
 
     fetchClubs();
   }, []);
+
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem("role");
+    localStorage.removeItem("email");
+    window.location.href = "/";
+  };
 
   // Calculate stats from real data
   const stats = useMemo(() => {
@@ -214,6 +222,17 @@ const AdminDashboard = () => {
             )}
           </button>
         </nav>
+
+        {/* Logout Section */}
+        <div className="sidebar-footer-new">
+          <div className="user-info-new"></div>
+          <div className="logout-section-new">
+            <button className="logout-button-new" onClick={handleLogout}>
+              <LogOut className="logout-icon" size={18} />
+              Logout
+            </button>
+          </div>
+        </div>
       </aside>
 
       {/* Main Content */}
@@ -281,37 +300,209 @@ const AdminDashboard = () => {
               />
             </div>
 
-            {/* Recent Activity */}
-            <div className="chart-card" style={{ marginTop: '2rem' }}>
-              <h3 className="chart-title">
-                <Activity className="chart-icon blue" />
-                Recent Club Updates
-              </h3>
-              <div style={{ padding: '1rem' }}>
-                {allClubs.slice(0, 10).map((club, idx) => (
-                  <div key={idx} style={{
-                    padding: '0.75rem',
-                    borderBottom: '1px solid #e5e7eb',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
-                    <div>
-                      <strong>{club.club_name}</strong>
-                      <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
-                        {club.category} • {club.visibility}
+            {/* Charts Section */}
+            <div style={{ marginTop: '2rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+              {/* Bar Chart - Club Statistics */}
+              <div className="chart-card">
+                <h3 className="chart-title">
+                  <BarChart className="chart-icon blue" />
+                  Club Statistics Overview
+                </h3>
+                <div style={{ padding: '1.5rem' }}>
+                  {[
+                    { name: 'Total Clubs', value: stats.totalClubs, color: '#3b82f6', max: stats.totalClubs },
+                    { name: 'Active Clubs', value: stats.activeClubs, color: '#10b981', max: stats.totalClubs },
+                    { name: 'Blocked Clubs', value: stats.blockedClubs, color: '#ef4444', max: stats.totalClubs },
+                    { name: 'Public Clubs', value: stats.publicClubs, color: '#8b5cf6', max: stats.totalClubs }
+                  ].map((item, idx) => (
+                    <div key={idx} style={{ marginBottom: '1rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                        <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{item.name}</span>
+                        <span style={{ fontSize: '0.875rem', fontWeight: '600', color: item.color }}>{item.value}</span>
+                      </div>
+                      <div style={{ 
+                        width: '100%', 
+                        height: '24px', 
+                        backgroundColor: '#f3f4f6', 
+                        borderRadius: '0.5rem',
+                        overflow: 'hidden'
+                      }}>
+                        <div style={{
+                          width: `${(item.value / item.max) * 100}%`,
+                          height: '100%',
+                          backgroundColor: item.color,
+                          transition: 'width 0.3s ease',
+                          borderRadius: '0.5rem'
+                        }} />
                       </div>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <span className={`badge ${club.block_status === 'Blocked' ? 'badge-red' : 'badge-green'}`}>
-                        {club.block_status}
-                      </span>
-                      <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>
-                        Updated {formatDate(club.updated_at)}
+                  ))}
+                </div>
+              </div>
+
+              {/* Pie Chart - Club Distribution */}
+              <div className="chart-card">
+                <h3 className="chart-title">
+                  <Target className="chart-icon purple" />
+                  Club Distribution
+                </h3>
+                <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  {(() => {
+                    const total = stats.activeClubs + stats.blockedClubs;
+                    const activePercent = total > 0 ? (stats.activeClubs / total) * 100 : 0;
+                    const blockedPercent = total > 0 ? (stats.blockedClubs / total) * 100 : 0;
+                    
+                    return (
+                      <>
+                        <div style={{ 
+                          width: '150px', 
+                          height: '150px', 
+                          borderRadius: '50%',
+                          background: `conic-gradient(
+                            #10b981 0deg ${activePercent * 3.6}deg,
+                            #ef4444 ${activePercent * 3.6}deg 360deg
+                          )`,
+                          marginBottom: '1.5rem',
+                          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                        }} />
+                        <div style={{ width: '100%' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <div style={{ width: '12px', height: '12px', backgroundColor: '#10b981', borderRadius: '2px' }} />
+                              <span style={{ fontSize: '0.875rem' }}>Active Clubs</span>
+                            </div>
+                            <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>
+                              {stats.activeClubs} ({activePercent.toFixed(0)}%)
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <div style={{ width: '12px', height: '12px', backgroundColor: '#ef4444', borderRadius: '2px' }} />
+                              <span style={{ fontSize: '0.875rem' }}>Blocked Clubs</span>
+                            </div>
+                            <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>
+                              {stats.blockedClubs} ({blockedPercent.toFixed(0)}%)
+                            </span>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* Visibility Breakdown */}
+              <div className="chart-card">
+                <h3 className="chart-title">
+                  <Activity className="chart-icon green" />
+                  Visibility Statistics
+                </h3>
+                <div style={{ padding: '1.5rem' }}>
+                  {(() => {
+                    const publicActive = allClubs.filter(c => c.visibility === 'Public' && c.block_status === 'Unblocked').length;
+                    const publicBlocked = allClubs.filter(c => c.visibility === 'Public' && c.block_status === 'Blocked').length;
+                    const privateActive = allClubs.filter(c => c.visibility === 'Private' && c.block_status === 'Unblocked').length;
+                    const privateBlocked = allClubs.filter(c => c.visibility === 'Private' && c.block_status === 'Blocked').length;
+                    const maxValue = Math.max(publicActive + publicBlocked, privateActive + privateBlocked);
+                    
+                    return (
+                      <>
+                        {[
+                          { name: 'Public', active: publicActive, blocked: publicBlocked },
+                          { name: 'Private', active: privateActive, blocked: privateBlocked }
+                        ].map((item, idx) => (
+                          <div key={idx} style={{ marginBottom: '1.5rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                              <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{item.name}</span>
+                              <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                                Active: {item.active} | Blocked: {item.blocked}
+                              </span>
+                            </div>
+                            <div style={{ 
+                              width: '100%', 
+                              height: '32px', 
+                              backgroundColor: '#f3f4f6', 
+                              borderRadius: '0.5rem',
+                              overflow: 'hidden',
+                              display: 'flex'
+                            }}>
+                              <div style={{
+                                width: `${maxValue > 0 ? (item.active / maxValue) * 100 : 0}%`,
+                                height: '100%',
+                                backgroundColor: '#10b981',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontSize: '0.75rem',
+                                fontWeight: '600'
+                              }}>
+                                {item.active > 0 && item.active}
+                              </div>
+                              <div style={{
+                                width: `${maxValue > 0 ? (item.blocked / maxValue) * 100 : 0}%`,
+                                height: '100%',
+                                backgroundColor: '#ef4444',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontSize: '0.75rem',
+                                fontWeight: '600'
+                              }}>
+                                {item.blocked > 0 && item.blocked}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* Top Categories */}
+              <div className="chart-card">
+                <h3 className="chart-title">
+                  <Shield className="chart-icon blue" />
+                  Top 5 Categories
+                </h3>
+                <div style={{ padding: '1.5rem' }}>
+                  {(() => {
+                    const categoryCount = {};
+                    allClubs.forEach(club => {
+                      categoryCount[club.category] = (categoryCount[club.category] || 0) + 1;
+                    });
+                    const topCategories = Object.entries(categoryCount)
+                      .sort((a, b) => b[1] - a[1])
+                      .slice(0, 5);
+                    const maxCount = topCategories.length > 0 ? topCategories[0][1] : 1;
+                    
+                    return topCategories.map(([name, count], idx) => (
+                      <div key={idx} style={{ marginBottom: '1rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                          <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{name}</span>
+                          <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#3b82f6' }}>{count}</span>
+                        </div>
+                        <div style={{ 
+                          width: '100%', 
+                          height: '24px', 
+                          backgroundColor: '#f3f4f6', 
+                          borderRadius: '0.5rem',
+                          overflow: 'hidden'
+                        }}>
+                          <div style={{
+                            width: `${(count / maxCount) * 100}%`,
+                            height: '100%',
+                            backgroundColor: '#3b82f6',
+                            transition: 'width 0.3s ease',
+                            borderRadius: '0.5rem'
+                          }} />
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                ))}
+                    ));
+                  })()}
+                </div>
               </div>
             </div>
           </div>

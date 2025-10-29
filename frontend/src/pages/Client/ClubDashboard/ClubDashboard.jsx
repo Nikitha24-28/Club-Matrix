@@ -57,15 +57,13 @@ const ClubDashboard = () => {
     description: '',
     start_date: '',
     end_date: '',
-    priority: 'medium',
-    visibility: 'club_members'
+    priority: 'medium'
   });
   const [newTarget, setNewTarget] = useState({
     title: '',
     description: '',
     end_date: '',
     priority: 'urgent',
-    visibility: 'officers_only'
   });
   const [newMember, setNewMember] = useState({
     email: '',
@@ -141,7 +139,6 @@ const ClubDashboard = () => {
           socialMedia: data.social_media,
           website: data.website,
           logoUrl: data.logo_url,
-          visibility: data.visibility,
           status: data.status
         });
 
@@ -307,7 +304,6 @@ const ClubDashboard = () => {
           title: newAnnouncement.title,
           description: newAnnouncement.description,
           priority: newAnnouncement.priority,
-          visibility: 'club_members',
           userEmail
         });
 
@@ -343,7 +339,6 @@ const ClubDashboard = () => {
         start_date: newEvent.start_date,
         end_date: newEvent.end_date || newEvent.start_date,
         priority: newEvent.priority,
-        visibility: newEvent.visibility,
         userEmail
       });
 
@@ -366,9 +361,7 @@ const ClubDashboard = () => {
         title: '',
         description: '',
         start_date: '',
-        end_date: '',
-        priority: 'medium',
-        visibility: 'club_members'
+        end_date: ''
       });
       setShowEventModal(false);
       alert('Event created successfully!');
@@ -387,7 +380,6 @@ const ClubDashboard = () => {
         description: newTarget.description,
         end_date: newTarget.end_date,
         priority: newTarget.priority,
-        visibility: newTarget.visibility,
         userEmail
       });
 
@@ -414,8 +406,7 @@ const ClubDashboard = () => {
         title: '',
         description: '',
         end_date: '',
-        priority: 'urgent',
-        visibility: 'officers_only'
+        priority: 'urgent'
       });
       setShowTargetModal(false);
       alert('Target created successfully!');
@@ -1108,18 +1099,6 @@ const ClubDashboard = () => {
                 </select>
               </div>
 
-              <div className="form-group">
-                <label>Visibility</label>
-                <select
-                  value={newEvent.visibility}
-                  onChange={(e) => setNewEvent({ ...newEvent, visibility: e.target.value })}
-                >
-                  <option value="public">Public</option>
-                  <option value="club_members">Club Members</option>
-                  <option value="officers_only">Officers Only</option>
-                </select>
-              </div>
-
               <div className="modal-actions">
                 <button type="button" className="btn-cancel" onClick={() => setShowEventModal(false)}>
                   Cancel
@@ -1195,17 +1174,6 @@ const ClubDashboard = () => {
                 </select>
               </div>
 
-              <div className="form-group">
-                <label>Visibility</label>
-                <select
-                  value={newTarget.visibility}
-                  onChange={(e) => setNewTarget({ ...newTarget, visibility: e.target.value })}
-                >
-                  <option value="public">Public</option>
-                  <option value="club_members">Club Members</option>
-                  <option value="officers_only">Officers Only</option>
-                </select>
-              </div>
 
               <div className="modal-actions">
                 <button type="button" className="btn-cancel" onClick={() => setShowTargetModal(false)}>

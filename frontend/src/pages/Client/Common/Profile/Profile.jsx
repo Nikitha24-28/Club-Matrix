@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Profile.css';
+import image from "../../../../assets/dp.jpg";
 
 const Profile = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -63,8 +64,7 @@ const Profile = () => {
           gender: data.gender,
           address: data.address,
           email: data.mail,
-          profileImage:
-            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face", // placeholder
+          profileImage: image,
           clubs: (data.clubs || []).map((club, index) => ({
             id: index + 1,
             name: club.name,

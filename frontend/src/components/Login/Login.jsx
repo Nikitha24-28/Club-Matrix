@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from "sonner";
 import axios from "axios";
 import "./Login.css";
-import communityHero from "./loginimage.webp";
 
 const Login = () => {
   const location = useLocation();
@@ -14,7 +12,6 @@ const Login = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Handle success message from signup
   useEffect(() => {
     if (location.state?.message) {
       toast.success(location.state.message);
@@ -64,105 +61,88 @@ const Login = () => {
 
   return (
     <div className="login-container">
-      {/* Left Side - Login Form */}
       <div className="login-form-section">
         <div className="login-form-wrapper">
-          {/* Header */}
           <div className="login-header">
             <h1 className="login-title">Club Matrix</h1>
-            <p className="login-subtitle">
-              Welcome back! Please sign in to your account.
-            </p>
+            <p className="login-subtitle">Sign in to continue</p>
           </div>
 
-          {/* Login Card */}
           <div className="login-card">
-            <div className="card-header">
-              <h2 className="card-title">Sign In</h2>
-            </div>
-            <div className="card-content">
-              {error && (
-                <div className="error-alert">
-                  <p>{error}</p>
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="login-form">
-                <div className="form-group">
-                  <label htmlFor="email" className="form-label">Email</label>
-                  <input
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="form-input"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="password" className="form-label">Password</label>
-                  <input
-                    id="password"
-                    type="password"
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="form-input"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="submit-button"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Signing in..." : "Sign In"}
-                </button>
-              </form>
-
-              <div className="contact-admin">
-                <p className="contact-text">
-                  Don't have an account?{" "}
-                  <button 
-                    type="button"
-                    className="contact-link"
-                    onClick={() => navigate('/signup')}
-                  >
-                    Create Account
-                  </button>
-                </p>
+            {error && (
+              <div className="error-alert">
+                <p>{error}</p>
               </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="login-form">
+              <div className="form-group">
+                <label htmlFor="email" className="form-label">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="form-input"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="password" className="form-label">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="form-input"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="submit-button"
+                disabled={isLoading}
+              >
+                {isLoading ? "Signing in..." : "Sign in"}
+              </button>
+            </form>
+
+            <div className="divider">
+              <span>or</span>
+            </div>
+
+            <div className="signup-section">
+              <p className="signup-text">
+                Don't have an account?{" "}
+                <button
+                  type="button"
+                  className="signup-link"
+                  onClick={() => navigate("/signup")}
+                >
+                  Create account
+                </button>
+              </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Right Side - Hero Image */}
       <div className="hero-section">
-        <div className="hero-overlay"></div>
-        <img
-          src={communityHero}
-          alt="Community collaboration"
-          className="hero-image"
-        />
-        <div className="hero-gradient"></div>
-
-        {/* Overlay Content */}
         <div className="hero-content">
-          <h2 className="hero-title">
-            Connect. Collaborate. Create.
-          </h2>
+          <h2 className="hero-title">Connect. Collaborate. Create.</h2>
           <p className="hero-description">
-            Join our vibrant community and unlock endless possibilities for growth and collaboration.
+            Join our community and unlock endless possibilities.
           </p>
         </div>
       </div>
-
-      {/* Toast Notifications */}
-      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };

@@ -18,4 +18,3 @@ const ClientLayout = ({ children, userRole = 'general', userStatus = 'member', c
 };
 
 export default ClientLayout;
-

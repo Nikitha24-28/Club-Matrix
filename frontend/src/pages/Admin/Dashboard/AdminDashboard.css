@@ -588,3 +588,95 @@
 .btn-load-more:hover {
   background-color: #1e40af;
 }
+/* Admin Dashboard Logout Section */
+.sidebar-footer-new {
+  margin-top: auto;
+  padding: 1.5rem;
+  border-top: 1px solid rgba(100, 116, 139, 0.15);
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.user-info-new {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-avatar-new {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.user-details-new {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-details-new p {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #2c3e50;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-details-new .role-new {
+  font-size: 0.8rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+.logout-section-new {
+  margin-top: 0;
+}
+
+.logout-button-new {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+  color: white;
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  letter-spacing: 0.04rem;
+  box-shadow: 0 2px 8px 0 rgba(59,130,246,0.09);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.logout-button-new:hover {
+  background: linear-gradient(90deg, #06b6d4 0%, #3b82f6 100%);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 4px 12px 0 rgba(59,130,246,0.13);
+}
+
+.logout-button-new:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(59,130,246,0.07);
+}
+
+.logout-icon {
+  flex-shrink: 0;
+}

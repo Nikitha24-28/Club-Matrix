@@ -540,8 +540,6 @@ const MoM = () => {
             </div>
 
             <div className="modal-body">
-            
-
               <div className="form-group">
                 <label>Meeting Title *</label>
                 <input

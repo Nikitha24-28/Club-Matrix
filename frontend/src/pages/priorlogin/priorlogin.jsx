@@ -47,7 +47,7 @@ const PriorLogin = () => {
             </button>
             <div className="navbar-brand">
               <Sparkles size={24} className="brand-icon" />
-              <h1 className="brand-title">CLUB MATRIX</h1>
+              <h1 className="brand-title head">CLUB MATRIX</h1>
             </div>
           </div>
           
