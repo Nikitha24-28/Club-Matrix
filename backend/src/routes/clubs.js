@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const verifyToken = require("../middleware/auth");
+const { verifyToken } = require("../middleware/auth");
 const {
   getPublicClubs, getProfileByEmail, getProfileByBody, joinClub, createClub,
   getClubDetails, getClubIdByName, getClubItems, getAnnouncements, getEvents,

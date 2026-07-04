@@ -5,7 +5,7 @@ const dbase = require("../config/database");
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log("Login attempt:", { email });
+    console.log("Login attempt received");
 
     const query = "SELECT id, role, password FROM login WHERE email = ?";
     const [rows] = await dbase.query(query, [email]);
@@ -25,7 +25,7 @@ const login = async (req, res) => {
       { expiresIn: "24h" }
     );
 
-    console.log("Login successful:", rows[0].role);
+    console.log("Login successful");
     res.status(200).json({ role: rows[0].role, token: token });
 
   } catch (err) {
