@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../../api/axiosInstance';
 import {
   Users,
   Calendar,
@@ -77,7 +77,7 @@ const ClubDashboard = () => {
   useEffect(() => {
     const fetchBlockStatus = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/clubs/${clubId}/block-status`);
+        const response = await axiosInstance.get(`/api/clubs/${clubId}/block-status`);
         setBlockStatus(response.data);
         console.log('Block status:', response.data);
       } catch (error) {
@@ -98,7 +98,7 @@ const ClubDashboard = () => {
   
     try {
       const userEmail = localStorage.getItem('email');
-      await axios.post(`http://localhost:5000/api/clubs/${clubId}/request-unblock`, {
+      await axiosInstance.post(`/api/clubs/${clubId}/request-unblock`, {
         unblockReason: unblockReason.trim(),
         userEmail
       });
@@ -108,7 +108,7 @@ const ClubDashboard = () => {
       setUnblockReason('');
       
       // Refresh block status
-      const response = await axios.get(`http://localhost:5000/api/clubs/${clubId}/block-status`);
+      const response = await axiosInstance.get(`/api/clubs/${clubId}/block-status`);
       setBlockStatus(response.data);
     } catch (error) {
       console.error('Error submitting unblock request:', error);
@@ -124,7 +124,7 @@ const ClubDashboard = () => {
         setError(null);
 
         const userEmail = localStorage.getItem('email');
-        const response = await axios.get(`http://localhost:5000/club/${clubId}?email=${userEmail}`);
+        const response = await axiosInstance.get(`/club/${clubId}?email=${userEmail}`);
         const data = response.data;
 
         setClubInfo({
@@ -163,7 +163,7 @@ const ClubDashboard = () => {
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/club/${clubId}/announcements`);
+        const response = await axiosInstance.get(`/api/club/${clubId}/announcements`);
         const dbAnnouncements = response.data.map(item => ({
           id: item.item_id,
           title: item.title,
@@ -189,7 +189,7 @@ const ClubDashboard = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/club/${clubId}/events`);
+        const response = await axiosInstance.get(`/api/club/${clubId}/events`);
         const dbEvents = response.data.map(item => ({
           id: item.item_id,
           title: item.title,
@@ -218,7 +218,7 @@ const ClubDashboard = () => {
   useEffect(() => {
     const fetchTargets = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/club/${clubId}/targets`);
+        const response = await axiosInstance.get(`/api/club/${clubId}/targets`);
         const dbTargets = response.data.map(item => {
           const match = item.description.match(/(\d+)/g);
           const targetValue = match ? parseInt(match[match.length - 1]) : 100;
@@ -251,7 +251,7 @@ const ClubDashboard = () => {
   useEffect(() => {
     const fetchMoms = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/moms/${clubId}`);
+        const response = await axiosInstance.get(`/api/moms/${clubId}`);
         const dbMoms = response.data.map(mom => ({
           id: mom.mom_id,
           name: mom.meeting_title,
@@ -275,7 +275,7 @@ const ClubDashboard = () => {
   useEffect(() => {
     const fetchJoinRequests = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/club/${clubId}/join-requests`);
+        const response = await axiosInstance.get(`/api/club/${clubId}/join-requests`);
         const dbRequests = response.data.map(req => ({
           id: req.client_id,
           name: req.full_name,
@@ -300,14 +300,14 @@ const ClubDashboard = () => {
     if (newAnnouncement.title && newAnnouncement.description) {
       try {
         const userEmail = localStorage.getItem('email');
-        await axios.post(`http://localhost:5000/api/club/${clubId}/announcements`, {
+        await axiosInstance.post(`/api/club/${clubId}/announcements`, {
           title: newAnnouncement.title,
           description: newAnnouncement.description,
           priority: newAnnouncement.priority,
           userEmail
         });
 
-        const response = await axios.get(`http://localhost:5000/api/club/${clubId}/announcements`);
+        const response = await axiosInstance.get(`/api/club/${clubId}/announcements`);
         const dbAnnouncements = response.data.map(item => ({
           id: item.item_id,
           title: item.title,
@@ -333,7 +333,7 @@ const ClubDashboard = () => {
     e.preventDefault();
     try {
       const userEmail = localStorage.getItem('email');
-      await axios.post(`http://localhost:5000/api/club/${clubId}/events`, {
+      await axiosInstance.post(`/api/club/${clubId}/events`, {
         title: newEvent.title,
         description: newEvent.description,
         start_date: newEvent.start_date,
@@ -342,7 +342,7 @@ const ClubDashboard = () => {
         userEmail
       });
 
-      const response = await axios.get(`http://localhost:5000/api/club/${clubId}/events`);
+      const response = await axiosInstance.get(`/api/club/${clubId}/events`);
       const dbEvents = response.data.map(item => ({
         id: item.item_id,
         title: item.title,
@@ -375,7 +375,7 @@ const ClubDashboard = () => {
     e.preventDefault();
     try {
       const userEmail = localStorage.getItem('email');
-      await axios.post(`http://localhost:5000/api/club/${clubId}/targets`, {
+      await axiosInstance.post(`/api/club/${clubId}/targets`, {
         title: newTarget.title,
         description: newTarget.description,
         end_date: newTarget.end_date,
@@ -383,7 +383,7 @@ const ClubDashboard = () => {
         userEmail
       });
 
-      const response = await axios.get(`http://localhost:5000/api/club/${clubId}/targets`);
+      const response = await axiosInstance.get(`/api/club/${clubId}/targets`);
       const dbTargets = response.data.map(item => {
         const match = item.description.match(/(\d+)/g);
         const targetValue = match ? parseInt(match[match.length - 1]) : 100;
@@ -419,7 +419,7 @@ const ClubDashboard = () => {
   const handleAddMemberSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`http://localhost:5000/api/club/${clubId}/add-member`, {
+      const response = await axiosInstance.post(`/api/club/${clubId}/add-member`, {
         memberEmail: newMember.email,
         role: newMember.role
       });
@@ -427,7 +427,7 @@ const ClubDashboard = () => {
       alert(response.data.message);
 
       const userEmail = localStorage.getItem('email');
-      const clubResponse = await axios.get(`http://localhost:5000/club/${clubId}?email=${userEmail}`);
+      const clubResponse = await axiosInstance.get(`/club/${clubId}?email=${userEmail}`);
       setMembers(clubResponse.data.members || []);
       setClubInfo(prev => ({ ...prev, memberCount: (prev.memberCount || 0) + 1 }));
 
@@ -482,11 +482,11 @@ const ClubDashboard = () => {
 
   const handleAcceptRequest = async (requestId) => {
     try {
-      await axios.post(`http://localhost:5000/api/club/${clubId}/join-requests/${requestId}/accept`);
+      await axiosInstance.post(`/api/club/${clubId}/join-requests/${requestId}/accept`);
       setJoinRequests((prev) => prev.filter((r) => r.id !== requestId));
       
       const userEmail = localStorage.getItem('email');
-      const response = await axios.get(`http://localhost:5000/club/${clubId}?email=${userEmail}`);
+      const response = await axiosInstance.get(`/club/${clubId}?email=${userEmail}`);
       setMembers(response.data.members || []);
       setClubInfo(prev => ({ ...prev, memberCount: (prev.memberCount || 0) + 1 }));
       
@@ -499,7 +499,7 @@ const ClubDashboard = () => {
 
   const handleRejectRequest = async (requestId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/club/${clubId}/join-requests/${requestId}/reject`);
+      await axiosInstance.delete(`/api/club/${clubId}/join-requests/${requestId}/reject`);
       setJoinRequests((prev) => prev.filter((r) => r.id !== requestId));
       console.log('✅ Request rejected successfully');
     } catch (error) {

@@ -1,9 +1,10 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   BarChart, Users, Calendar, Target, Shield, Ban, Search, Activity, X, AlertTriangle, LogOut,
 } from 'lucide-react';
 import './AdminDashboard.css';
+import axiosInstance from '../../../api/axiosInstance';
+import { toast } from 'sonner';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -20,13 +21,13 @@ const AdminDashboard = () => {
     const fetchClubs = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:5000/api/admin/clubs');
-        const data = await response.json();
+        const response = await axiosInstance.get('/api/admin/clubs');
+        const data = response.data;
         setAllClubs(data);
         console.log('✅ Loaded clubs:', data.length);
-      } catch (error) {
-        console.error('Error fetching clubs:', error);
-        alert('Failed to load clubs data');
+        } catch (error) {
+          console.error('Error fetching clubs:', error);
+          toast.error('Failed to load clubs data');
       } finally {
         setLoading(false);
       }
@@ -39,6 +40,7 @@ const AdminDashboard = () => {
   const handleLogout = () => {
     localStorage.removeItem("role");
     localStorage.removeItem("email");
+    localStorage.removeItem("token");
     window.location.href = "/";
   };
 
@@ -83,67 +85,46 @@ const AdminDashboard = () => {
 
   const handleBlockSubmit = async () => {
     if (!blockReason.trim()) {
-      alert('Please provide a reason for blocking');
+      toast.error('Please provide a reason for blocking');
       return;
     }
-
+    
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/clubs/${selectedClub.club_id}/block`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ blockReason: blockReason.trim() })
+      await axiosInstance.post(`/api/admin/clubs/${selectedClub.club_id}/block`, {
+        blockReason: blockReason.trim()
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to block club');
-      }
-
-      // Update local state
+    
       setAllClubs(prev => prev.map(c =>
         c.club_id === selectedClub.club_id
           ? { ...c, block_status: 'Blocked', block_reason: blockReason.trim(), updated_at: new Date().toISOString() }
           : c
       ));
-
-      alert(`Club "${selectedClub.club_name}" has been blocked successfully`);
+    
+      toast.success(`Club "${selectedClub.club_name}" has been blocked successfully`);
       setShowBlockModal(false);
       setSelectedClub(null);
       setBlockReason('');
     } catch (error) {
       console.error('Error blocking club:', error);
-      alert(error.message || 'Failed to block club');
+      toast.error(error.response?.data?.message || 'Failed to block club');
     }
   };
 
   // Handle unblock club
   const handleUnblock = async (club) => {
-    if (!confirm(`Are you sure you want to unblock "${club.club_name}"?`)) {
-      return;
-    }
-
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/clubs/${club.club_id}/unblock`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to unblock club');
-      }
-
-      // Update local state
+      await axiosInstance.post(`/api/admin/clubs/${club.club_id}/unblock`);
+    
       setAllClubs(prev => prev.map(c =>
         c.club_id === club.club_id
           ? { ...c, block_status: 'Unblocked', block_reason: null, updated_at: new Date().toISOString() }
           : c
       ));
-
-      alert(`Club "${club.club_name}" has been unblocked successfully`);
+    
+      toast.success(`Club "${club.club_name}" has been unblocked successfully`);
     } catch (error) {
       console.error('Error unblocking club:', error);
-      alert(error.message || 'Failed to unblock club');
+      toast.error(error.response?.data?.message || 'Failed to unblock club');
     }
   };
 

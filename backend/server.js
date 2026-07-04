@@ -4,6 +4,9 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 require("dotenv").config();
 const db = require("./src/config/db").development;
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const verifyToken = require("./src/middleware/auth");
 
 const app = express();
 const PORT = 5000;
@@ -33,22 +36,39 @@ const dbase = mysql.createPool({
 // ======================== LOGIN ========================
 app.post("/login", async (req, res) => {
   try {
-      const { email, password } = req.body;
-      console.log("Login attempt:", { email, password });
+    const { email, password } = req.body;
+    console.log("Login attempt:", { email });
 
-      const query = "SELECT role FROM login WHERE email = ? AND password = ?";
-      const [rows] = await dbase.query(query, [email, password]);
+    // Fetch user by email only (not password)
+    const query = "SELECT id, role, password FROM login WHERE email = ?";
+    const [rows] = await dbase.query(query, [email]);
 
-      if (rows.length === 0) {
-          console.log("Invalid credentials for:", email);
-          return res.status(404).json({ error: "Invalid credentials" });
-      }
+    if (rows.length === 0) {
+      console.log("No user found for:", email);
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
 
-      console.log("Login successful:", rows[0].role);
-      res.status(200).json({ role: rows[0].role });
+    // Compare entered password against hashed password in DB
+    const isMatch = await bcrypt.compare(password, rows[0].password);
+
+    if (!isMatch) {
+      console.log("Wrong password for:", email);
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    console.log("Login successful:", rows[0].role);
+
+    const token = jwt.sign(
+      { id: rows[0].id, email: email, role: rows[0].role },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    res.status(200).json({ role: rows[0].role, token: token });
+
   } catch (err) {
-      console.error("Database error:", err);
-      res.status(500).json({ error: "Database query failed" });
+    console.error("Database error:", err);
+    res.status(500).json({ error: "Database query failed" });
   }
 });
 
@@ -105,7 +125,7 @@ app.post("/signup", async (req, res) => {
     // Insert into login table
     const [loginResult] = await connection.query(
       "INSERT INTO login (email, password, role) VALUES (?, ?, 'CLIENT')",
-      [email, password]
+[email, await bcrypt.hash(password, 10)]
     );
 
     const loginId = loginResult.insertId;
@@ -170,7 +190,7 @@ app.get("/clubs_fetch", async (req, res) => {
 });
 
 // ======================== PROFILE ========================
-app.get("/profile/:email", async (req, res) => {
+app.get("/profile/:email",verifyToken, async (req, res) => {
   const { email } = req.params;
 
   if (!email) {
@@ -227,7 +247,7 @@ app.get("/profile/:email", async (req, res) => {
   }
 });
 
-app.post("/profile", async (req, res) => {
+app.post("/profile", verifyToken, async (req, res) => {
   const { email } = req.body;
 
   if (!email) {
@@ -287,7 +307,7 @@ app.post("/profile", async (req, res) => {
 });
 
 // ======================== JOIN CLUB ========================
-app.post("/clubs/join", async (req, res) => {
+app.post("/clubs/join", verifyToken, async (req, res) => {
   try {
     const { userEmail, clubId } = req.body;
 
@@ -397,11 +417,11 @@ const handleCreateClub = async (req, res) => {
   }
 };
 
-app.post("/create", handleCreateClub);
-app.post("/api/clubs/create", handleCreateClub);
+app.post("/create", verifyToken, handleCreateClub);
+app.post("/api/clubs/create", verifyToken, handleCreateClub);
 
 // ======================== GET CLUB DETAILS ========================
-app.get("/club/:clubId", async (req, res) => {
+app.get("/club/:clubId", verifyToken, async (req, res) => {
   try {
     const { clubId } = req.params;
     const userEmail = req.query.email;
@@ -485,7 +505,7 @@ app.get("/club/:clubId", async (req, res) => {
 });
 
 // ======================== GET CLUB ID BY NAME ========================
-app.get("/api/club/id/:clubName", async (req, res) => {
+app.get("/api/club/id/:clubName", verifyToken, async (req, res) => {
   const { clubName } = req.params;
   console.log("📍 Fetching club_id for club name:", clubName);
   
@@ -511,7 +531,7 @@ app.get("/api/club/id/:clubName", async (req, res) => {
 // ======================== CLUB ITEMS ROUTES (ANNOUNCEMENTS, EVENTS, TARGETS) ========================
 
 // GET all items for a specific club
-app.get("/api/club/:clubId/items", async (req, res) => {
+app.get("/api/club/:clubId/items", verifyToken, async (req, res) => {
   const { clubId } = req.params;
   const { type } = req.query;
   
@@ -538,7 +558,7 @@ app.get("/api/club/:clubId/items", async (req, res) => {
 });
 
 // GET announcements for a club
-app.get("/api/club/:clubId/announcements", async (req, res) => {
+app.get("/api/club/:clubId/announcements", verifyToken, async (req, res) => {
   const { clubId } = req.params;
   
   console.log("📍 GET /api/club/:clubId/announcements - clubId:", clubId);
@@ -562,7 +582,7 @@ app.get("/api/club/:clubId/announcements", async (req, res) => {
 });
 
 // GET events for a club
-app.get("/api/club/:clubId/events", async (req, res) => {
+app.get("/api/club/:clubId/events", verifyToken, async (req, res) => {
   const { clubId } = req.params;
   
   console.log("📍 GET /api/club/:clubId/events - clubId:", clubId);
@@ -586,7 +606,7 @@ app.get("/api/club/:clubId/events", async (req, res) => {
 });
 
 // GET targets for a club
-app.get("/api/club/:clubId/targets", async (req, res) => {
+app.get("/api/club/:clubId/targets", verifyToken, async (req, res) => {
   const { clubId } = req.params;
   
   console.log("📍 GET /api/club/:clubId/targets - clubId:", clubId);
@@ -610,7 +630,7 @@ app.get("/api/club/:clubId/targets", async (req, res) => {
 });
 
 // POST - Create new announcement
-app.post("/api/club/:clubId/announcements", async (req, res) => {
+app.post("/api/club/:clubId/announcements", verifyToken, async (req, res) => {
   const { clubId } = req.params;
   const { title, description, priority, visibility, userEmail } = req.body;
   
@@ -646,7 +666,7 @@ app.post("/api/club/:clubId/announcements", async (req, res) => {
 });
 
 // POST - Create new event
-app.post("/api/club/:clubId/events", async (req, res) => {
+app.post("/api/club/:clubId/events", verifyToken, async (req, res) => {
   const { clubId } = req.params;
   const { title, description, start_date, end_date, priority, visibility, userEmail } = req.body;
   
@@ -682,7 +702,7 @@ app.post("/api/club/:clubId/events", async (req, res) => {
 });
 
 // POST - Create new target
-app.post("/api/club/:clubId/targets", async (req, res) => {
+app.post("/api/club/:clubId/targets", verifyToken, async (req, res) => {
   const { clubId } = req.params;
   const { title, description, end_date, priority, visibility, userEmail } = req.body;
   
@@ -718,7 +738,7 @@ app.post("/api/club/:clubId/targets", async (req, res) => {
 });
 
 // PUT - Update item status
-app.put("/api/club/items/:itemId/status", async (req, res) => {
+app.put("/api/club/items/:itemId/status", verifyToken, async (req, res) => {
   const { itemId } = req.params;
   const { status } = req.body;
   
@@ -743,7 +763,7 @@ app.put("/api/club/items/:itemId/status", async (req, res) => {
 });
 
 // DELETE - Delete an item
-app.delete("/api/club/items/:itemId", async (req, res) => {
+app.delete("/api/club/items/:itemId", verifyToken, async (req, res) => {
   const { itemId } = req.params;
   
   console.log("📍 DELETE /api/club/items/:itemId - itemId:", itemId);
@@ -769,7 +789,7 @@ app.delete("/api/club/items/:itemId", async (req, res) => {
 // ======================== MoM ROUTES ========================
 
 // GET all MoMs for a club
-app.get("/api/moms/:clubId", async (req, res) => {
+app.get("/api/moms/:clubId", verifyToken, async (req, res) => {
   const { clubId } = req.params;
   console.log("📍 Fetching MoMs for club_id:", clubId);
   
@@ -788,7 +808,7 @@ app.get("/api/moms/:clubId", async (req, res) => {
 });
 
 // GET single MoM by ID
-app.get("/api/mom/:momId", async (req, res) => {
+app.get("/api/mom/:momId", verifyToken, async (req, res) => {
   const { momId } = req.params;
   try {
     const [rows] = await dbase.query("SELECT * FROM club_mom WHERE mom_id = ?", [momId]);
@@ -801,7 +821,7 @@ app.get("/api/mom/:momId", async (req, res) => {
 });
 
 // POST new MoM
-app.post("/api/moms/add", async (req, res) => {
+app.post("/api/moms/add", verifyToken, async (req, res) => {
   try {
     const {
       club_id,
@@ -852,7 +872,7 @@ app.post("/api/moms/add", async (req, res) => {
 });
 
 // DELETE a MoM
-app.delete("/api/mom/:momId", async (req, res) => {
+app.delete("/api/mom/:momId", verifyToken, async (req, res) => {
   const { momId } = req.params;
   try {
     const [result] = await dbase.query("DELETE FROM club_mom WHERE mom_id = ?", [momId]);
@@ -865,7 +885,7 @@ app.delete("/api/mom/:momId", async (req, res) => {
 });
 
 
-app.post("/clubs/request", async (req, res) => {
+app.post("/clubs/request", verifyToken, async (req, res) => {
   try {
     const { userEmail, clubId, requestReason } = req.body;
     if (!userEmail || !clubId || !requestReason) {
@@ -905,7 +925,7 @@ app.post("/clubs/request", async (req, res) => {
 });
 
 // GET JOIN REQUESTS FOR A USER (using query param for email)
-app.get("/clubs/requests", async (req, res) => {
+app.get("/clubs/requests", verifyToken, async (req, res) => {
   const userEmail = req.query.email;
   if (!userEmail) {
     return res.status(400).json({ message: "Email query parameter is required" });
@@ -947,7 +967,7 @@ app.get("/clubs/requests", async (req, res) => {
 });
 
 // GET join requests for a specific club
-app.get('/api/club/:clubId/join-requests', async (req, res) => {
+app.get('/api/club/:clubId/join-requests', verifyToken, async (req, res) => {
   const { clubId } = req.params;
   
   try {
@@ -973,7 +993,7 @@ app.get('/api/club/:clubId/join-requests', async (req, res) => {
 });
 
 // Accept join request
-app.post('/api/club/:clubId/join-requests/:clientId/accept', async (req, res) => {
+app.post('/api/club/:clubId/join-requests/:clientId/accept', verifyToken, async (req, res) => {
   const { clubId, clientId } = req.params;
   
   try {
@@ -992,7 +1012,7 @@ app.post('/api/club/:clubId/join-requests/:clientId/accept', async (req, res) =>
 });
 
 // Reject join request
-app.delete('/api/club/:clubId/join-requests/:clientId/reject', async (req, res) => {
+app.delete('/api/club/:clubId/join-requests/:clientId/reject', verifyToken, async (req, res) => {
   const { clubId, clientId } = req.params;
   
   try {
@@ -1010,7 +1030,7 @@ app.delete('/api/club/:clubId/join-requests/:clientId/reject', async (req, res) 
 });
 
 // ======================== ADD MEMBER TO CLUB (COORDINATOR ONLY) ========================
-app.post("/api/club/:clubId/add-member", async (req, res) => {
+app.post("/api/club/:clubId/add-member", verifyToken, async (req, res) => {
   const { clubId } = req.params;
   const { memberEmail, role } = req.body;
   
@@ -1106,7 +1126,7 @@ app.post("/api/club/:clubId/add-member", async (req, res) => {
 // Add these routes to your server.js file
 
 // ======================== ADMIN - GET ALL CLUBS ========================
-app.get("/api/admin/clubs", async (req, res) => {
+app.get("/api/admin/clubs", verifyToken, async (req, res) => {
   try {
     const [clubs] = await dbase.query(`
       SELECT 
@@ -1131,7 +1151,7 @@ app.get("/api/admin/clubs", async (req, res) => {
 });
 
 // ======================== ADMIN - BLOCK CLUB ========================
-app.post("/api/admin/clubs/:clubId/block", async (req, res) => {
+app.post("/api/admin/clubs/:clubId/block", verifyToken, async (req, res) => {
   const { clubId } = req.params;
   const { blockReason } = req.body;
   
@@ -1167,7 +1187,7 @@ app.post("/api/admin/clubs/:clubId/block", async (req, res) => {
 });
 
 // ======================== ADMIN - UNBLOCK CLUB ========================
-app.post("/api/admin/clubs/:clubId/unblock", async (req, res) => {
+app.post("/api/admin/clubs/:clubId/unblock", verifyToken, async (req, res) => {
   const { clubId } = req.params;
   
   console.log("📍 Unblocking club_id:", clubId);
@@ -1195,7 +1215,7 @@ app.post("/api/admin/clubs/:clubId/unblock", async (req, res) => {
 });
 
 // ======================== COORDINATOR - REQUEST UNBLOCK ========================
-app.post("/api/clubs/:clubId/request-unblock", async (req, res) => {
+app.post("/api/clubs/:clubId/request-unblock", verifyToken, async (req, res) => {
   const { clubId } = req.params;
   const { unblockReason, userEmail } = req.body;
   
@@ -1243,7 +1263,7 @@ app.post("/api/clubs/:clubId/request-unblock", async (req, res) => {
 });
 
 // ======================== GET CLUB BLOCK STATUS ========================
-app.get("/api/clubs/:clubId/block-status", async (req, res) => {
+app.get("/api/clubs/:clubId/block-status", verifyToken, async (req, res) => {
   const { clubId } = req.params;
   
   try {

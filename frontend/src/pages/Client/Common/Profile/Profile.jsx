@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from "../../../../api/axiosInstance";
 import './Profile.css';
 import image from "../../../../assets/dp.jpg";
 
@@ -54,7 +54,7 @@ const Profile = () => {
           return;
         }
 
-        const res = await axios.get(`http://localhost:5000/profile/${mail}`);
+        const res = await axiosInstance.get(`/profile/${mail}`);
         const data = res.data;
 
         setProfileData({

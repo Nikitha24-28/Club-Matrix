@@ -1,5 +1,5 @@
 import React from 'react'
-import axios from "axios";
+import axiosInstance from '../../../../api/axiosInstance';
 import './CreateClub.css';
 
 const CreateClub = () => {
@@ -21,7 +21,7 @@ const CreateClub = () => {
     };
   
     try {
-      const res = await axios.post("http://localhost:5000/create", formData);
+      const res = await axiosInstance.post("/create", formData);
       alert(res.data.message); // success or custom backend message
 
       // ✅ Reset the form after successful submission

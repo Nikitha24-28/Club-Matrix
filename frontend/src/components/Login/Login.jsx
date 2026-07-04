@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import axios from "axios";
+import axiosInstance from "../../api/axiosInstance";
 import "./Login.css";
 
 const Login = () => {
@@ -27,14 +27,16 @@ const Login = () => {
     setError("");
 
     try {
-      const response = await axios.post("http://localhost:5000/login", {
+      const response = await axiosInstance.post("/login", {
         email,
         password,
       });
 
       const role = response.data.role;
+      const token = response.data.token;
       localStorage.setItem("role", role);
       localStorage.setItem("email", email);
+      localStorage.setItem("token", token);
 
       toast.success("Login successful! Welcome back to Club Matrix");
 

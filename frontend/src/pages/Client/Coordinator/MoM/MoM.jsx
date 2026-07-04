@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import './MoM.css';
+import axiosInstance from '../../../../api/axiosInstance';
+import { toast } from 'sonner';
 
 const MoM = () => {
   // Get clubId from URL params OR localStorage as fallback
@@ -8,8 +10,7 @@ const MoM = () => {
   const [clubId, setClubId] = useState(urlClubId || localStorage.getItem("ClubId"));
   const [isResolvingClubId, setIsResolvingClubId] = useState(false);
   const [userRole, setUserRole] = useState(null); // ✅ Track user role
-  
-  const API_BASE_URL = 'http://localhost:5000/api';
+
   
   const [momList, setMomList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -58,12 +59,9 @@ const MoM = () => {
         setIsResolvingClubId(true);
         
         try {
-          const response = await fetch(`http://localhost:5000/api/club/id/${encodeURIComponent(currentClubId)}`);
-          if (!response.ok) {
-            throw new Error('Failed to resolve club ID');
-          }
-          
-          const data = await response.json();
+          const response = await axiosInstance.get(`/api/club/id/${encodeURIComponent(currentClubId)}`);
+          const data = response.data;
+
           console.log('✅ Resolved club_id:', data.club_id);
           setClubId(data.club_id);
           localStorage.setItem("ClubId", data.club_id); // Store numeric ID
@@ -107,12 +105,9 @@ const MoM = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:5000/club/${clubId}?email=${userEmail}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch user role');
-      }
+      const response = await axiosInstance.get(`/club/${clubId}?email=${userEmail}`);
+      const data = response.data;
 
-      const data = await response.json();
       console.log('User role:', data.userRole);
       setUserRole(data.userRole);
     } catch (err) {
@@ -127,19 +122,11 @@ const MoM = () => {
       setLoading(true);
       setError(null);
       
-      console.log('Making fetch request to:', `${API_BASE_URL}/moms/${clubId}`);
-      const response = await fetch(`${API_BASE_URL}/moms/${clubId}`);
+      console.log('Making fetch request to:', `/api/moms/${clubId}`);
       
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error response:', errorText);
-        throw new Error(`Failed to fetch MoMs: ${response.status} ${response.statusText}`);
-      }
-      
-      const data = await response.json();
+      const response = await axiosInstance.get(`/api/moms/${clubId}`);
+      const data = response.data;
+
       console.log('Raw data from backend:', data);
       console.log('Number of MoMs received:', data.length);
       
@@ -195,7 +182,7 @@ const MoM = () => {
 
   const handleAddMoM = async () => {
     if (!newMoM.meeting_title.trim() || !newMoM.meeting_date.trim()) {
-      alert('Please fill in all required fields (Meeting Title and Date)');
+      toast.error('Please fill in all required fields (Meeting Title and Date)');
       return;
     }
 
@@ -228,23 +215,9 @@ const MoM = () => {
 
       console.log('Sending MoM data:', momData);
 
-      const response = await fetch(`${API_BASE_URL}/moms/add`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(momData)
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error adding MoM:', errorText);
-        throw new Error('Failed to add MoM');
-      }
-
-      const result = await response.json();
-      console.log('MoM added successfully:', result);
-      alert('MoM added successfully!');
+      const result = await axiosInstance.post(`/api/moms/add`, momData);
+      console.log('MoM added successfully:', result.data);
+      toast.success('MoM added successfully!');
       
       // Refresh the list
       await fetchMoMs();
@@ -270,7 +243,7 @@ const MoM = () => {
       setShowAddModal(false);
     } catch (err) {
       console.error('Error adding MoM:', err);
-      alert('Failed to add MoM. Please try again.');
+      toast.error('Failed to add MoM. Please try again.');
     }
   };
 
@@ -280,19 +253,13 @@ const MoM = () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/mom/${momId}`, {
-        method: 'DELETE'
-      });
+      await axiosInstance.delete(`/api/mom/${momId}`);
+      toast.success('MoM deleted successfully!');
 
-      if (!response.ok) {
-        throw new Error('Failed to delete MoM');
-      }
-
-      alert('MoM deleted successfully!');
       await fetchMoMs();
     } catch (err) {
       console.error('Error deleting MoM:', err);
-      alert('Failed to delete MoM. Please try again.');
+      toast.error('Failed to delete MoM. Please try again.');
     }
   };
 
@@ -357,7 +324,7 @@ const MoM = () => {
           <h2>Error Loading MoMs</h2>
           <p><strong>Error:</strong> {error}</p>
           <p><strong>Club ID:</strong> {clubId || 'Not found'}</p>
-          <p><strong>API URL:</strong> {API_BASE_URL}/moms/{clubId}</p>
+          <p><strong>API URL:</strong> /api/moms/{clubId}</p>
           <button onClick={fetchMoMs} style={{
             padding: '10px 20px',
             marginTop: '20px',

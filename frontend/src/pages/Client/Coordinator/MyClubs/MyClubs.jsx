@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from '../../../../api/axiosInstance';
 import "./MyClubs.css";
 
 const MyClubs = () => {
@@ -15,7 +15,7 @@ const MyClubs = () => {
         const fetchClubs = async () => {
             try {
                 // Add cache-busting timestamp to force fresh data
-                const res = await axios.get(`http://localhost:5000/profile/${email}?t=${Date.now()}`);
+                const res = await axiosInstance.get(`/profile/${email}?t=${Date.now()}`);
                 const data = res.data;
 
                 console.log("Full response from backend:", data);
@@ -54,7 +54,7 @@ const MyClubs = () => {
         
         try {
             // ✅ Fetch the numeric club_id using club name
-            const response = await axios.get(`http://localhost:5000/api/club/id/${encodeURIComponent(club.name)}`);
+            const response = await axiosInstance.get(`/api/club/id/${encodeURIComponent(club.name)}`);
             const { club_id } = response.data;
             
             console.log("✅ Fetched club_id:", club_id, "for club:", club.name);

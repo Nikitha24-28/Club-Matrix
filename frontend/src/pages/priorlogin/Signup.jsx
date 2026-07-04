@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Mail, Lock, Phone, MapPin, Calendar, UserCircle } from 'lucide-react';
 import './Signup.css';
+import axiosInstance from '../../api/axiosInstance';
 
 const Signup = () => {
     const navigate = useNavigate();
@@ -92,28 +93,16 @@ const Signup = () => {
         setIsLoading(true);
         
         try {
-            const response = await fetch('http://localhost:5000/signup', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    fullName: formData.fullName,
-                    email: formData.email,
-                    password: formData.password,
-                    phone: formData.phone,
-                    dateOfBirth: formData.dateOfBirth,
-                    gender: formData.gender,
-                    address: formData.address
-                }),
+            const { data } = await axiosInstance.post('/signup', {
+                fullName: formData.fullName,
+                email: formData.email,
+                password: formData.password,
+                phone: formData.phone,
+                dateOfBirth: formData.dateOfBirth,
+                gender: formData.gender,
+                address: formData.address
             });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Failed to create account');
-            }
-
+              
             console.log('Signup successful:', data);
             
             // Navigate to login page after successful signup

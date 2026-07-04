@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./JoinRequests.css";
+import axiosInstance from '../../../../api/axiosInstance';
 
 const JoinRequests = () => {
   const [joinRequests, setJoinRequests] = useState([]);
@@ -17,20 +18,11 @@ const JoinRequests = () => {
           throw new Error("User email not found. Please log in again.");
         }
         
-        const response = await fetch(
-          `http://localhost:5000/clubs/requests?email=${encodeURIComponent(userEmail)}`
+        const response = await axiosInstance.get(
+          `/clubs/requests?email=${encodeURIComponent(userEmail)}`
         );
+        setJoinRequests(Array.isArray(response.data) ? response.data : []);
         
-        if (!response.ok) {
-          if (response.status === 404) {
-            setJoinRequests([]);
-            return;
-          }
-          throw new Error(`Failed to fetch join requests: ${response.status} ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        setJoinRequests(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Error fetching join requests:", err);
         setError(err.message);
