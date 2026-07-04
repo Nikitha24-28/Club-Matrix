@@ -21,28 +21,29 @@ Club Matrix lets students discover, join, and manage college clubs through a rol
 | Scheduling | node-cron |
 
 ## Architecture
-Club-Matrix/
-├── frontend/                  # React + Vite
-│   └── src/
-│       ├── api/               # Axios instance with JWT interceptor
-│       ├── pages/
-│       │   ├── Admin/         # Admin dashboard
-│       │   ├── Client/
-│       │   │   ├── ClubDashboard/
-│       │   │   │   ├── components/   # Announcements, Events, Targets, Members
-│       │   │   │   └── hooks/        # useClubDashboard custom hook
-│       │   │   ├── Common/    # CommunityPage, Profile, JoinRequests
-│       │   │   └── Coordinator/      # MoM, MyClubs
-│       │   └── priorlogin/   # Login, Signup
-│       └── components/        # Shared layout components
-└── backend/
-├── server.js              # Entry point (~55 lines)
-└── src/
-├── config/            # DB connection pool
-├── middleware/        # JWT auth + role verification
-├── routes/            # auth, clubs, moms, admin
-└── controllers/      # Business logic per domain
+Club-Matrix/               
+├── frontend/                  # React + Vite                   
+│   └── src/                                                         
+│       ├── api/               # Axios instance with JWT interceptor                                
+│       ├── pages/                                                       
+│       │   ├── Admin/         # Admin dashboard                                  
+│       │   ├── Client/                                  
+│       │   │   ├── ClubDashboard/                                               
+│       │   │   │   ├── components/   # Announcements, Events, Targets, Members                              
+│       │   │   │   └── hooks/        # useClubDashboard custom hook                                           
+│       │   │   ├── Common/    # CommunityPage, Profile, JoinRequests                                          
+│       │   │   └── Coordinator/      # MoM, MyClubs                                            
+│       │   └── priorlogin/   # Login, Signup                                                   
+│       └── components/        # Shared layout components                                                     
+└── backend/                                                          
+├── server.js              # Entry point (~55 lines)                                     
+└── src/                                                             
+├── config/            # DB connection pool                                                    
+├── middleware/        # JWT auth + role verification                                          
+├── routes/            # auth, clubs, moms, admin                                               
+└── controllers/      # Business logic per domain                                              
 
+ 
 ## Security
 
 - Passwords hashed with **bcrypt** (salt rounds: 10)
