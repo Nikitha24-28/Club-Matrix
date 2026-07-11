@@ -9,34 +9,18 @@ const MyClubs = () => {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
-    const email = localStorage.getItem("email"); 
+    const email = localStorage.getItem("email") || '';
 
     useEffect(() => {
+        if (!email) return;
+        
         const fetchClubs = async () => {
             try {
-                // Add cache-busting timestamp to force fresh data
                 const res = await axiosInstance.get(`/profile/${email}?t=${Date.now()}`);
                 const data = res.data;
-
-                console.log("Full response from backend:", data);
-                console.log("Clubs data from backend:", data.clubs);
-                
-                // Log each club to see if it has id/club_id
-                data.clubs?.forEach((club, index) => {
-                    console.log(`Club ${index}:`, {
-                        id: club.id,
-                        club_id: club.club_id,
-                        name: club.name,
-                        fullObject: club
-                    });
-                });
-
-                // ✅ backend now sends clubs with 'id' field
-                // Filter out clubs where role is 'Request'
                 const filteredClubs = (data.clubs || []).filter(
                     (club) => club.role && club.role.toLowerCase() !== "request"
                 );
-
                 setMyClubs(filteredClubs);
             } catch (err) {
                 console.error("Error fetching clubs:", err);

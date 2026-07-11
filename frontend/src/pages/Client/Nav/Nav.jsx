@@ -25,7 +25,8 @@ const Nav = ({ userRole = 'general', userStatus = 'member', currentClub = null }
   const handleLogout = () => {
     localStorage.removeItem("role");
     localStorage.removeItem("email");
-    navigate("/");
+    localStorage.removeItem("token");
+    window.location.href = "/";
   };
   
 

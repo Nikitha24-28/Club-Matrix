@@ -79,22 +79,16 @@ const MoM = () => {
 
   // ✅ Second useEffect: Fetch MoMs once we have numeric clubId
   useEffect(() => {
-    if (!clubId || isResolvingClubId) {
-      return;
-    }
-    
-    // Ensure clubId is numeric before fetching
+    if (!clubId || isResolvingClubId) return;
     if (isNaN(clubId)) {
-      console.error('❌ ClubId is still not numeric:', clubId);
       setError('Invalid club ID format');
       setLoading(false);
       return;
     }
-    
-    console.log('📍 Fetching MoMs for numeric club_id:', clubId);
     fetchMoMs();
-    fetchUserRole(); // ✅ Fetch user role
-  }, [clubId, isResolvingClubId]);
+    fetchUserRole();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clubId]);
 
   // ✅ Function to fetch user's role in this club
   const fetchUserRole = async () => {

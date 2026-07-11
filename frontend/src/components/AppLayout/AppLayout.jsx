@@ -1,110 +1,111 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from '../Login/Login';
 import CommunityPage from '../../pages/Client/Common/CommunityPage/CommunityPage';
 import AdminDashboard from "../../pages/Admin/Dashboard/AdminDashboard";
 import CreateClub from '../../pages/Client/Common/CreateClub/CreateClub';
-import JoinRequests from "../../pages/Client/Common/JoinRequests/JoinRequests"
-import PriorLogin from "../../pages/priorlogin/priorlogin"; 
+import JoinRequests from "../../pages/Client/Common/JoinRequests/JoinRequests";
+import PriorLogin from "../../pages/priorlogin/priorlogin";
 import Signup from "../../pages/priorlogin/Signup";
-import Profile from '../../pages/Client/Common/Profile/Profile'
-import Nav from '../../pages/Client/Nav/Nav';
+import Profile from '../../pages/Client/Common/Profile/Profile';
 import MyClubs from '../../pages/Client/Coordinator/MyClubs/MyClubs';
 import ClientLayout from '../../pages/Client/Nav/ClientLayout';
 import ClubDashboard from '../../pages/Client/ClubDashboard/ClubDashboard';
 import MoM from '../../pages/Client/Coordinator/MoM/MoM';
 
+const ProtectedRoute = ({ children, allowedRole }) => {
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
+
+  if (!token || !role) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRole && role !== allowedRole) {
+    return <Navigate to={role === 'ADMIN' ? '/AdminDashboard' : '/CommunityPage'} replace />;
+  }
+
+  return children;
+};
+
 const AppLayout = () => {
-  const role = localStorage.getItem("role");
+  const role = localStorage.getItem('role');
 
   return (
     <Router>
-      
       <Routes>
-        {/* Landing page (always public) */}
+        {/* Public routes */}
         <Route path="/" element={<PriorLogin />} />
-
-        {/* Signup page: always available; redirect if already logged in */}
         <Route
           path="/signup"
           element={
             role
-              ? (role === "ADMIN" ? <Navigate to="/AdminDashboard" /> : <Navigate to="/CommunityPage" />)
+              ? <Navigate to={role === 'ADMIN' ? '/AdminDashboard' : '/CommunityPage'} replace />
               : <Signup />
           }
         />
-
-        {/* Login page: always available; redirect if already logged in */}
         <Route
           path="/login"
           element={
             role
-              ? (role === "ADMIN" ? <Navigate to="/AdminDashboard" /> : <Navigate to="/CommunityPage" />)
+              ? <Navigate to={role === 'ADMIN' ? '/AdminDashboard' : '/CommunityPage'} replace />
               : <Login />
           }
         />
 
-        {/* If logged in */}
-        {role && (
-          <>
-            {role === "ADMIN" && (
-              <>
-                <Route path="/AdminDashboard/*" element={<AdminDashboard />} />
-                <Route path="*" element={<Navigate to="/AdminDashboard" />} />
-              </>
-            )}
+        {/* Admin routes */}
+        <Route path="/AdminDashboard/*" element={
+          <ProtectedRoute allowedRole="ADMIN">
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
 
-            {role === "CLIENT" && (
-              <>
-                <Route path="/CommunityPage" element={
-                  <ClientLayout userRole="general">
-                    <CommunityPage />
-                  </ClientLayout>
-                } />
-                <Route path="/MyClubsPage" element={
-                  <ClientLayout userRole="general">
-                    <MyClubs/>
-                  </ClientLayout>
-                } />
-                <Route path="/ClubDashboard/:clubId" element={
-                  <ClientLayout userRole="general">
-                    <ClubDashboard />
-                  </ClientLayout>
-                } />
-                <Route path="/ClubDashboard/:clubId/mom" element={
-                  <ClientLayout userRole="general">
-                    <MoM />
-                  </ClientLayout>
-                } />
-                
-                <Route path="/CreateClubPage" element={
-                  <ClientLayout userRole="general">
-                    <CreateClub />
-                  </ClientLayout>
-                } />
-                <Route path="/ProfilePage" element={
-                  <ClientLayout userRole="general">
-                    <Profile/>
-                  </ClientLayout>
-                } />
-                <Route path="/JoinRequestsPage" element={
-                  <ClientLayout userRole="general">
-                    <JoinRequests/>
-                  </ClientLayout>
-                } />
-                <Route path="/SettingsPage" element={
-                  <ClientLayout userRole="general">
-                    <div>Settings Page - Coming Soon</div>
-                  </ClientLayout>
-                } />
-                <Route path="*" element={<Navigate to="/CommunityPage" />} />
-              </>
-            )}
-          </>
-        )}
+        {/* Client routes */}
+        <Route path="/CommunityPage" element={
+          <ProtectedRoute allowedRole="CLIENT">
+            <ClientLayout userRole="general"><CommunityPage /></ClientLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/MyClubsPage" element={
+          <ProtectedRoute allowedRole="CLIENT">
+            <ClientLayout userRole="general"><MyClubs /></ClientLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/ClubDashboard/:clubId" element={
+          <ProtectedRoute allowedRole="CLIENT">
+            <ClientLayout userRole="general"><ClubDashboard /></ClientLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/ClubDashboard/:clubId/mom" element={
+          <ProtectedRoute allowedRole="CLIENT">
+            <ClientLayout userRole="general"><MoM /></ClientLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/CreateClubPage" element={
+          <ProtectedRoute allowedRole="CLIENT">
+            <ClientLayout userRole="general"><CreateClub /></ClientLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/ProfilePage" element={
+          <ProtectedRoute allowedRole="CLIENT">
+            <ClientLayout userRole="general"><Profile /></ClientLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/JoinRequestsPage" element={
+          <ProtectedRoute allowedRole="CLIENT">
+            <ClientLayout userRole="general"><JoinRequests /></ClientLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/SettingsPage" element={
+          <ProtectedRoute allowedRole="CLIENT">
+            <ClientLayout userRole="general"><div>Settings — coming soon</div></ClientLayout>
+          </ProtectedRoute>
+        } />
 
-        {/* Fallback when not logged in: send unknown routes to landing */}
-        {!role && <Route path="*" element={<Navigate to="/" />} />}
+        {/* Fallback */}
+        <Route path="*" element={
+          <Navigate to={role === 'ADMIN' ? '/AdminDashboard' : role === 'CLIENT' ? '/CommunityPage' : '/'} replace />
+        } />
       </Routes>
     </Router>
   );

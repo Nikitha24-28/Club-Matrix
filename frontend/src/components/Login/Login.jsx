@@ -41,10 +41,11 @@ const Login = () => {
       toast.success("Login successful! Welcome back to Club Matrix");
 
       if (role === "ADMIN") {
-        window.location.href = "/AdminDashboard";
+        window.location.replace("/AdminDashboard");
       } else {
-        window.location.href = "/CommunityPage";
+        window.location.replace("/CommunityPage");
       }
+      
     } catch (error) {
       if (error.response) {
         setError(error.response.data.error || "Login failed");
